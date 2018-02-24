@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Transformers\TaskTransformer;
+use App\Task;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
@@ -11,9 +13,11 @@ class TaskController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(TaskTransformer $transformer)
     {
-        //
+	    $tasks = Task::all();
+	    $resource = $transformer->collection($tasks);
+	    return response()->json($resource);
     }
 
     /**
@@ -37,15 +41,19 @@ class TaskController extends Controller
         //
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
+	/**
+	 * Display the specified resource.
+	 *
+	 * @param TaskTransformer $transformer
+	 * @param  int $id
+	 *
+	 * @return \Illuminate\Http\JsonResponse
+	 */
+    public function show(TaskTransformer $transformer, $id)
     {
-        //
+	    $task = Task::findOrFail($id);
+	    $resource = $transformer->item($task);
+	    return response()->json($resource);
     }
 
     /**
