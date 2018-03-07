@@ -1,5 +1,6 @@
 <?php
 
+use App\User;
 use Illuminate\Http\Request;
 
 /*
@@ -12,6 +13,15 @@ use Illuminate\Http\Request;
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+// To create a user
+Route::post('users', function (Request $request) {
+    return User::create([
+        'name' => $request['name'],
+        'email' => $request['email'],
+        'password' => bcrypt($request['password']),
+    ]);
+});
 
 Route::resource('categories', 'CategoryController');
 Route::resource('tasks', 'TaskController');
