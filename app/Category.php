@@ -12,4 +12,13 @@ class Category extends Model
 	 * @var bool
 	 */
 	public $timestamps = false;
+
+	/**
+	 * The attributes that are mass assignable.
+	 *
+	 * @var array
+	 */
+	protected $fillable = [
+		'user_id', 'name',
+	];
 }
