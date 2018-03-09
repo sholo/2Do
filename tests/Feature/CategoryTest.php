@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\User;
+use Faker\Factory as Faker;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
@@ -17,11 +18,11 @@ class CategoryTest extends TestCase
 	 */
     public function testCreateCategory()
     {
-        //$faker = Faker\Factory::create();
+	    $faker = Faker::create();
         $user = factory(User::class)->create();
         $category = array(
             'user_id' => $user->id,
-            'name' => 'Category Temporal'
+            'name' => $faker->title
         );
 
         $response = $this->post('api/categories', $category);
