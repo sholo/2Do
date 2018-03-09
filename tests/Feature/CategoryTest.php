@@ -3,17 +3,13 @@
 namespace Tests\Feature;
 
 use App\User;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class CategoryTest extends TestCase
 {
-    use DatabaseTransactions;
-
-	/**
-	 * @return \Illuminate\Database\Eloquent\Model
-	 */
-	public function testCreateUser()
+	private function createUser()
 	{
 		// Creating an temporal user
 		return User::create( [
