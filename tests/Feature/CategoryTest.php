@@ -3,40 +3,29 @@
 namespace Tests\Feature;
 
 use App\User;
-use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
 class CategoryTest extends TestCase
 {
-	private function createUser()
-	{
-		// Creating an temporal user
-		return User::create( [
-			'name' => 'Temporal',
-			'email' => 'temporal@gmail.com',
-			'password' => bcrypt('secret'),
-		] );
-	}
+    use DatabaseTransactions;
 
-	/**
+    /**
 	 * A basic test example.
-	 *
-	 * @depends testCreateUser
-	 *
-	 * @param User $user
 	 *
 	 * @return void
 	 */
-    public function testCreateCategory(User $user)
+    public function testCreateCategory()
     {
-        $temporal_category = [
+        //$faker = Faker\Factory::create();
+        $user = factory(User::class)->create();
+        $category = array(
             'user_id' => $user->id,
-            'name' => 'Temporal Category',
-        ];
+            'name' => 'Category Temporal'
+        );
 
-        $category =  $this->post('api/categories', $temporal_category);
-        $category->assertStatus(201);
-        $this->assertDatabaseHas('categories', $temporal_category);
+        $response = $this->post('api/categories', $category);
+        $response->assertStatus(201);
+        $this->assertDatabaseHas('categories', $category);
     }
 }
