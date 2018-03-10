@@ -17,6 +17,6 @@ $factory->define(App\Category::class, function (Faker\Generator $faker) {
 		'user_id' => function () {
 			return factory(App\User::class)->create()->id;
 		},
-		'name' => $faker->text,
+		'name' => $faker->name,
 	];
 });

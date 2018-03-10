@@ -2,8 +2,6 @@
 
 namespace App\Http\Transformers;
 
-use TransformerInterface;
-
 class CategoryTransformer implements TransformerInterface
 {
 	/**

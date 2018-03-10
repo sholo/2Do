@@ -1,5 +1,7 @@
 <?php
 
+namespace App\Http\Transformers;
+
 interface TransformerInterface
 {
 	public function transform($object_model);
