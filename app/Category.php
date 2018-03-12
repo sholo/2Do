@@ -21,4 +21,20 @@ class Category extends Model
 	protected $fillable = [
 		'user_id', 'name',
 	];
+
+    /**
+     * Get the tasks for this category.
+     */
+    public function tasks()
+    {
+        return $this->hasMany('App\Task');
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user()
+    {
+        return $this->belongsTo('App\User');
+    }
 }

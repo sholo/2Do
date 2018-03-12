@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Category;
 use App\Http\Transformers\TaskTransformer;
 use App\Task;
 use Illuminate\Http\Request;
@@ -13,7 +14,7 @@ class TaskController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(TaskTransformer $transformer)
+    public function index(Category $category, TaskTransformer $transformer)
     {
 	    $tasks = Task::all();
 	    $resource = $transformer->collection($tasks);

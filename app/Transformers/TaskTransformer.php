@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Http\Transformers;
+namespace App\Transformers;
+
+use App\Http\Transformers\TransformerInterface;
 
 class TaskTransformer implements TransformerInterface
 {

@@ -13,8 +13,8 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::resource('categories', 'CategoryController');
-Route::resource('tasks', 'TaskController');
+Route::resource('users.categories', 'CategoryController');
+Route::resource('categories.tasks', 'TaskController');
 
 Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();

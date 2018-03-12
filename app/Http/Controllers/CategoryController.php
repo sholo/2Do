@@ -3,22 +3,28 @@
 namespace App\Http\Controllers;
 
 use App\Category;
-use App\Http\Transformers\CategoryTransformer;
+use App\Repositories\CategoryRepository;
+use App\User;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-	/**
-	 * Display a listing of the resource.
-	 *
-	 * @param CategoryTransformer $transformer
-	 *
-	 * @return \Illuminate\Http\JsonResponse
-	 */
-    public function index(CategoryTransformer $transformer)
+    private $category;
+
+    public function __construct(CategoryRepository $category)
     {
-        $categories = Category::all();
-        $resource = $transformer->collection($categories);
+        $this->category = $category;
+    }
+
+    /**
+     * Display a listing of the resource.
+     *
+     * @param $user_id
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index($user_id)
+    {
+        $resource = $this->category->getAllByUser($user_id);
         return response()->json($resource);
     }
 
@@ -28,9 +34,9 @@ class CategoryController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store($user_id, Request $request)
     {
-	    Category::create($request->all());
+	    Category::create($user_id, $request->all());
 	    return response()->json(['message' => 'category_created'], 201);
     }
 
