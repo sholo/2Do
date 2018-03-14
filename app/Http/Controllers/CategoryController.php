@@ -22,7 +22,7 @@ class CategoryController extends Controller
      * @param $user_id
      * @return \Illuminate\Http\JsonResponse
      */
-    public function index($user_id)
+    public function index($user_id = 10)
     {
         $resource = $this->category->getAllByUser($user_id);
         return response()->json($resource);

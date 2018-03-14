@@ -2,6 +2,7 @@
 namespace App\Repositories;
 
 use App\Category;
+use App\Transformers\CategoryTransformer;
 use App\User;
 
 class CategoryRepository
