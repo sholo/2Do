@@ -3,7 +3,6 @@ namespace App\Repositories;
 
 use App\Category;
 use App\Transformers\CategoryTransformer;
-use App\User;
 
 class CategoryRepository
 {
@@ -21,25 +20,109 @@ class CategoryRepository
 
     /**
      * Index Path
-     * @param $user_id
      * @return array
      */
-    public function getAllByUser($user_id)
+    public function getAllByUser()
     {
-        $user = User::findOrFail($user_id);
-        $resource = $this->transformer->collection($user->categories);
+        $user = request()->user();
+        if ( $user ) {
+            $resource = $this->transformer->collection($user->categories);
+        } else {
+            $resource = array("message" => "User doesn't exist");
+        }
         return $resource;
     }
 
     /**
      * Index Path
-     * @param $user_id
      * @return array
      */
-    public function createByUser($user_id, $params)
+    public function createByUser($params)
     {
-        $user = Category::create($params);
-        $resource = $this->transformer->collection($user->categories);
-        return $resource;
+        $user = request()->user();
+        if ( $user ) {
+            $params["user_id"] = $user->id;
+            $this->model::create($params);
+            $response = array("text" => ["message" => "category_created"], "status" => 201);
+        } else {
+            $response = array("text" => ["message" => "User doesn't exist"], "status" => 404);
+        }
+
+        return $response;
+    }
+
+    /**
+     * Index Path
+     * @return array
+     */
+    public function showByUserAndCategoryID($category_id)
+    {
+        $user = request()->user();
+
+        if ( $user ) {
+            $category = $this->model::where('user_id', $user->id)
+                ->where('id', $category_id)
+                ->firstOrFail();
+
+            if ( $category ) {
+                $response = $this->transformer->item($category);
+            } else {
+                $response = array("message" => "Category doesn't found");
+            }
+        } else {
+            $response = array("message" => "User doesn't exist");
+        }
+
+        return $response;
+    }
+
+    /**
+     * Index Path
+     * @return array
+     */
+    public function updateByUser($params, $category_id)
+    {
+        $user = request()->user();
+        if ( $user ) {
+            $category = $this->model::where('user_id', $user->id)
+                                    ->where('id', $category_id)
+                                    ->firstOrFail();
+
+            if ( $category ) {
+                $category->fill($params)->save();
+                $response = $this->transformer->item($category);
+            } else {
+                $response = array("message" => "Category doesn't found");
+            }
+        } else {
+            $response = array("message" => "User doesn't exist");
+        }
+
+        return $response;
+    }
+
+    /**
+     * Index Path
+     * @return array
+     */
+    public function deleteByUser($category_id)
+    {
+        $user = request()->user();
+        if ( $user ) {
+            $category = $this->model::where('user_id', $user->id)
+                ->where('id', $category_id)
+                ->firstOrFail();
+
+            if ( $category ) {
+                $category->delete();
+                $response = array("text" => ["message" => "Category deleted successful"], "status" => 201);
+            } else {
+                $response = array("text" => ["message" => "Category doesn't found"], "status" => 404);
+            }
+        } else {
+            $response = array("text" => ["message" => "User doesn't exist"], "status" => 404);
+        }
+
+        return $response;
     }
 }

@@ -13,7 +13,13 @@ use Illuminate\Http\Request;
 |
 */
 
+
 Route::group(['middleware' => 'auth:api'], function () {
     Route::resource('categories', 'CategoryController');
     Route::resource('categories.tasks', 'TaskController');
+
+    Route::get('/user', function () {
+        return response()->json(request()->user());
+    });
 });
+
