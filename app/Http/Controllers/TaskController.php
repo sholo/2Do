@@ -3,32 +3,32 @@
 namespace App\Http\Controllers;
 
 use App\Category;
-use App\Http\Transformers\TaskTransformer;
+use App\Repositories\TaskRepository;
+use App\Transformers\TaskTransformer;
 use App\Task;
 use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Category $category, TaskTransformer $transformer)
+    private $task;
+    private $transformer;
+
+    public function __construct(TaskRepository $task, TaskTransformer $transformer)
     {
-	    $tasks = Task::all();
-	    $resource = $transformer->collection($tasks);
-	    return response()->json($resource);
+        $this->task = $task;
+        $this->transformer = $transformer;
     }
 
     /**
-     * Show the form for creating a new resource.
+     * Display a listing of the resource.
      *
+     * @param $category_id
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function index($category_id)
     {
-        //
+        $resource = $this->task->getAllByCategoryAndUser($category_id);
+        return response()->json($resource);
     }
 
     /**
@@ -37,9 +37,10 @@ class TaskController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, $category_id)
     {
-        //
+        $response = $this->task->createByCategoryAndUser($request->all(), $category_id);
+        return response()->json($response['text'], $response['status']);
     }
 
 	/**
