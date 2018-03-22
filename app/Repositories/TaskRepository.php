@@ -70,6 +70,44 @@ class TaskRepository
         return $response;
     }
 
+	/**
+	 * Index Path
+	 *
+	 * @param $category_id
+	 * @param $task_id
+	 *
+	 * @return array
+	 */
+	public function showByUserTaskIDAndCategoryID($category_id, $task_id)
+	{
+		$user = request()->user();
+
+		if ( $user ) {
+			$category = $user->categories()
+			             ->where('id',$category_id)
+			             ->firstOrFail();
+
+			if ( $category ) {
+				$task = $category
+					->tasks()
+					->where('id',$task_id)
+					->firstOrFail();
+
+				if ( $task ) {
+					$response = $this->transformer->item($task);
+				} else {
+					$response = array("message" => "Task doesn't found");
+				}
+			} else {
+				$response = array("message" => "Category doesn't found");
+			}
+		} else {
+			$response = array("message" => "User doesn't exist");
+		}
+
+		return $response;
+	}
+
     public function update($basemap_id, $new_map)
     {
         return DB::table('base_maps')

@@ -46,15 +46,14 @@ class TaskController extends Controller
 	/**
 	 * Display the specified resource.
 	 *
-	 * @param TaskTransformer $transformer
-	 * @param  int $id
+	 * @param $category_id
+	 * @param $task_id
 	 *
 	 * @return \Illuminate\Http\JsonResponse
 	 */
-    public function show(TaskTransformer $transformer, $id)
+    public function show($category_id, $task_id)
     {
-	    $task = Task::findOrFail($id);
-	    $resource = $transformer->item($task);
+	    $resource = $this->task->showByUserTaskIDAndCategoryID($category_id, $task_id);
 	    return response()->json($resource);
     }
 
