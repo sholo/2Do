@@ -58,36 +58,30 @@ class TaskController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
-
-    /**
      * Update the specified resource in storage.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
+     * @param  \Illuminate\Http\Request $request
+     * @param  int $category_id
+     * @param int $task_id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $category_id, $task_id)
     {
-        //
+        $response = $this->task->updateByUserTaskIDandCategoryID($request->all(), $category_id, $task_id);
+        return response()->json($response);
     }
 
     /**
      * Remove the specified resource from storage.
      *
-     * @param  int  $id
+     * @param  int $category_id
+     *
      * @return \Illuminate\Http\Response
+     * @throws \Exception
      */
-    public function destroy($id)
+    public function destroy($category_id, $task_id)
     {
-        //
+        $response = $this->task->deleteByUserTaskIDandCategoryID($category_id, $task_id);
+        return response()->json($response['text'], $response['status']);
     }
 }

@@ -108,16 +108,71 @@ class TaskRepository
 		return $response;
 	}
 
-    public function update($basemap_id, $new_map)
+	/**
+    * Index Path
+    * @return array
+    */
+    public function updateByUserTaskIDandCategoryID($params, $category_id, $task_id)
     {
-        return DB::table('base_maps')
-            ->where('id', $basemap_id)
-            ->update(['map' => $new_map]);
+        $user = request()->user();
+        if ( $user ) {
+            $category = $this->model::where('user_id', $user->id)
+                ->where('id', $category_id)
+                ->firstOrFail();
+
+            if ( $category ) {
+                $task = $category
+                    ->tasks()
+                    ->where('id',$task_id)
+                    ->firstOrFail();
+
+                if ( $task ) {
+                    $task->fill($params)->save();
+                    $response = $this->transformer->item($task);
+                } else {
+                    $response = array("message" => "Task doesn't found");
+                }
+            } else {
+                $response = array("message" => "Category doesn't found");
+            }
+        } else {
+            $response = array("message" => "User doesn't exist");
+        }
+
+        return $response;
     }
-    public function delete($basemap_id)
+
+    /**
+     * Index Path
+     * @return array
+     */
+    public function deleteByUserTaskIDandCategoryID($category_id, $task_id)
     {
-        return DB::table('base_maps')
-            ->where('id', $basemap_id)
-            ->delete();
+        $user = request()->user();
+        if ( $user ) {
+            $category = $this->model::where('user_id', $user->id)
+                ->where('id', $category_id)
+                ->firstOrFail();
+
+            if ( $category ) {
+                $task = $category
+                    ->tasks()
+                    ->where('id',$task_id)
+                    ->firstOrFail();
+
+                if ( $task ) {
+                    $task->delete();
+                    $response = array("text" => ["message" => "Task deleted successful"], "status" => 201);
+                } else {
+                    $response = array("message" => "Task doesn't found");
+                }
+            } else {
+                $response = array("text" => ["message" => "Category doesn't found"], "status" => 404);
+            }
+        } else {
+            $response = array("text" => ["message" => "User doesn't exist"], "status" => 404);
+        }
+
+        return $response;
     }
 }
