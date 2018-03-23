@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Category;
 use App\User;
 use Faker\Factory as Faker;
+use Laravel\Passport\Passport;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 
@@ -19,8 +20,13 @@ class CategoryTest extends TestCase
 	 */
 	public function testGetAllCategories()
 	{
+	    $user = factory(User::class)->create();
+        Passport::actingAs($user);
+
 		$number_of_categories = 10;
-		$categories = factory(Category::class, $number_of_categories)->create();
+		$categories = factory(Category::class, $number_of_categories)->create([
+		    'user_id' => $user->id
+        ]);
 
 		$response = $this->get('api/categories');
 		$response->assertStatus(200);
@@ -34,16 +40,20 @@ class CategoryTest extends TestCase
 	 */
 	public function testCreateAndFindCategory()
 	{
-		$category_name = array(
+        $user = factory(User::class)->create();
+        Passport::actingAs($user);
+
+		$array_category = array(
+		    'user_id' => $user->id,
 			'name' => 'Temporal'
 		);
 
-		$category = factory(Category::class)->create($category_name);
+		$category = factory(Category::class)->create($array_category);
 
 		$response = $this->get('api/categories/' . $category->id);
 
 		$response->assertStatus(200);
-		$this->assertDatabaseHas('categories', $category_name);
+		$this->assertDatabaseHas('categories', $array_category);
 	}
 
 	/**
@@ -53,8 +63,10 @@ class CategoryTest extends TestCase
 	 */
 	public function testCreateCategory()
 	{
+        $user = factory(User::class)->create();
+        Passport::actingAs($user);
+
 		$faker = Faker::create();
-		$user = factory(User::class)->create();
 		$category = array(
 			'user_id' => $user->id,
 			'name' => $faker->title
@@ -73,15 +85,19 @@ class CategoryTest extends TestCase
 	 */
 	public function testCreateAndUpdateCategory()
 	{
-		$category = factory(Category::class)->create();
-		$update_category_name = array(
+        $user = factory(User::class)->create();
+        Passport::actingAs($user);
+
+        $category = factory(Category::class)->create();
+		$update_category = array(
+		    'user_id' => $user->id,
 			'name' => 'Category Update'
 		);
 
-		$response = $this->patch('api/categories/' . $category->id, $update_category_name);
+		$response = $this->patch('api/categories/' . $category->id, $update_category);
 		$response->assertStatus(200);
 
-		$this->assertDatabaseHas('categories', $update_category_name);
+		$this->assertDatabaseHas('categories', $update_category);
 		$this->assertDatabaseMissing('categories', $category->name);
 	}
 
@@ -92,15 +108,19 @@ class CategoryTest extends TestCase
 	 */
 	public function testCreateAndDeleteCategory()
 	{
-		$category_name = array(
+        $user = factory(User::class)->create();
+        Passport::actingAs($user);
+
+        $array_category = array(
+            'user_id' => $user->id,
 			'name' => 'Temporal'
 		);
 
-		$category = factory(Category::class)->create($category_name);
-		$this->assertDatabaseHas('categories', $category_name);
+		$category = factory(Category::class)->create($array_category);
+		$this->assertDatabaseHas('categories', $array_category);
 
 		$response = $this->delete('api/categories/' . $category->id);
 		$response->assertStatus(201);
-		$this->assertDatabaseMissing('categories', $category_name);
+		$this->assertDatabaseMissing('categories', $array_category);
 	}
 }
