@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Feature;
+namespace Tests\Unit;
 
 use App\Category;
 use App\User;
@@ -88,17 +88,17 @@ class CategoryTest extends TestCase
         $user = factory(User::class)->create();
         Passport::actingAs($user);
 
-        $category = factory(Category::class)->create();
-		$update_category = array(
-		    'user_id' => $user->id,
-			'name' => 'Category Update'
-		);
+        $array_category = array("user_id" => $user->id);
+        $category = factory(Category::class)->create($array_category);
 
-		$response = $this->patch('api/categories/' . $category->id, $update_category);
+        // Update
+		$array_category['name'] = 'Category Update';
+
+		$response = $this->patch('api/categories/' . $category->id, $array_category);
 		$response->assertStatus(200);
 
-		$this->assertDatabaseHas('categories', $update_category);
-		$this->assertDatabaseMissing('categories', $category->name);
+		$this->assertDatabaseHas('categories', $array_category);
+		$this->assertDatabaseMissing('categories', ["name" => $category->name]);
 	}
 
 	/**

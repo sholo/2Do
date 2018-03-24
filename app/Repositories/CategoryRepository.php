@@ -12,7 +12,13 @@ class CategoryRepository
     private $model;
     private $transformer;
 
-    public function __construct(Category $model, CategoryTransformer $transformer)
+	/**
+	 * CategoryRepository constructor.
+	 *
+	 * @param Category $model
+	 * @param CategoryTransformer $transformer
+	 */
+	public function __construct(Category $model, CategoryTransformer $transformer)
     {
         $this->model = $model;
         $this->transformer = $transformer;
@@ -33,10 +39,13 @@ class CategoryRepository
         return $resource;
     }
 
-    /**
-     * Index Path
-     * @return array
-     */
+	/**
+	 * Index Path
+	 *
+	 * @param $params
+	 *
+	 * @return array
+	 */
     public function createByUser($params)
     {
         $user = request()->user();
@@ -51,10 +60,13 @@ class CategoryRepository
         return $response;
     }
 
-    /**
-     * Index Path
-     * @return array
-     */
+	/**
+	 * Index Path
+	 *
+	 * @param $category_id
+	 *
+	 * @return array
+	 */
     public function showByUserAndCategoryID($category_id)
     {
         $user = request()->user();
@@ -76,10 +88,14 @@ class CategoryRepository
         return $response;
     }
 
-    /**
-     * Index Path
-     * @return array
-     */
+	/**
+	 * Index Path
+	 *
+	 * @param $params
+	 * @param $category_id
+	 *
+	 * @return array
+	 */
     public function updateByUser($params, $category_id)
     {
         $user = request()->user();
@@ -101,10 +117,14 @@ class CategoryRepository
         return $response;
     }
 
-    /**
-     * Index Path
-     * @return array
-     */
+	/**
+	 * Index Path
+	 *
+	 * @param $category_id
+	 *
+	 * @return array
+	 * @throws \Exception
+	 */
     public function deleteByUser($category_id)
     {
         $user = request()->user();
