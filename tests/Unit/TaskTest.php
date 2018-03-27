@@ -89,18 +89,18 @@ class TaskTest extends TestCase
 	{
 		$user = factory(User::class)->create();
 		Passport::actingAs($user);
-
-		$array_category = array("user_id" => $user->id);
-		$category = factory(Category::class)->create($array_category);
+        $category = factory(Category::class)->create(['user_id' => $user->id]);
+        $task = factory(Task::class)->create(['category_id' => $category->id]);
 
 		// Update
-		$array_category['name'] = 'Category Update';
+        $array_task['category_id'] = $category->id;
+        $array_task['description'] = 'Task Update';
 
-		$response = $this->patch('api/categories/' . $category->id, $array_category);
+		$response = $this->patch('api/categories/' . $category->id . '/tasks/' . $task->id, $array_task);
 		$response->assertStatus(200);
 
-		$this->assertDatabaseHas('categories', $array_category);
-		$this->assertDatabaseMissing('categories', ["name" => $category->name]);
+		$this->assertDatabaseHas('tasks', $array_task);
+		$this->assertDatabaseMissing('tasks', ["description" => $task->description]);
 	}
 
 	/**
@@ -112,17 +112,18 @@ class TaskTest extends TestCase
 	{
 		$user = factory(User::class)->create();
 		Passport::actingAs($user);
+        $category = factory(Category::class)->create(['user_id' => $user->id]);
 
-		$array_category = array(
-			'user_id' => $user->id,
-			'name' => 'Temporal'
-		);
+        $array_task = array(
+            'category_id' => $category->id,
+            'description' => 'Temporal'
+        );
 
-		$category = factory(Category::class)->create($array_category);
-		$this->assertDatabaseHas('categories', $array_category);
+		$task = factory(Task::class)->create($array_task);
+		$this->assertDatabaseHas('tasks', $array_task);
 
-		$response = $this->delete('api/categories/' . $category->id);
+		$response = $this->delete('api/categories/' . $category->id . '/tasks/' . $task->id);
 		$response->assertStatus(201);
-		$this->assertDatabaseMissing('categories', $array_category);
+		$this->assertDatabaseMissing('tasks', $array_task);
 	}
 }

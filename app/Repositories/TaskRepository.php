@@ -116,7 +116,7 @@ class TaskRepository
     {
         $user = request()->user();
         if ( $user ) {
-            $category = $this->model::where('user_id', $user->id)
+            $category = Category::where('user_id', $user->id)
                 ->where('id', $category_id)
                 ->firstOrFail();
 
@@ -150,7 +150,7 @@ class TaskRepository
     {
         $user = request()->user();
         if ( $user ) {
-            $category = $this->model::where('user_id', $user->id)
+            $category = Category::where('user_id', $user->id)
                 ->where('id', $category_id)
                 ->firstOrFail();
 
