@@ -3,15 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\CategoryRepository;
+use App\Transformers\CategoryTransformer;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
     private $category;
 
-    public function __construct(CategoryRepository $category)
+	/**
+	 * CategoryController constructor.
+	 */
+	public function __construct()
     {
-        $this->category = $category;
+        $this->category = new CategoryRepository();
     }
 
     /**
@@ -22,7 +26,7 @@ class CategoryController extends Controller
     public function index()
     {
         $resource = $this->category->getAllByUser();
-        return response()->json($resource);
+        return response()->json($resource["data"], $resource["code"]);
     }
 
     /**

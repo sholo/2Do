@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::group(['middleware' => 'auth:api'], function () {
+Route::group(['prefix' => 'v1'], function () {
     Route::resource('categories', 'CategoryController');
     Route::resource('categories.tasks', 'TaskController');
 });

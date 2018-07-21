@@ -2,49 +2,23 @@
 
 namespace App\Transformers;
 
-use App\Http\Transformers\TransformerInterface;
+use App\Http\Transformers\Transformer;
+use Illuminate\Database\Eloquent\Model;
 
-class CategoryTransformer implements TransformerInterface
+class CategoryTransformer extends Transformer
 {
 	/**
 	 * Transform a category model.
 	 *
-	 * @param  \App\Category $category
+	 * @param Model $category
+	 *
 	 * @return array
 	 */
-	public function transform($category)
+	protected function transform(Model $category)
 	{
 		return [
 			'id' => (int) $category->id,
 			'category' => $category->name,
 		];
-	}
-
-	/**
-	 * Transform a collection of categories.
-	 *
-	 * @param  \Illuminate\Database\Eloquent\Collection $categories
-	 * @return array
-	 */
-	public function collection($categories)
-	{
-		$resource = [];
-
-		foreach ($categories as $category) {
-			$resource[] = $this->transform($category);
-		}
-
-		return $resource;
-	}
-
-	/**
-	 * Transform a single category model.
-	 *
-	 * @param  \App\Category $category
-	 * @return array
-	 */
-	public function item($category)
-	{
-		return $this->transform($category);
 	}
 }

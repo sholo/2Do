@@ -2,7 +2,9 @@
 namespace App\Repositories;
 
 use App\Category;
+use App\User;
 use App\Transformers\CategoryTransformer;
+
 
 class CategoryRepository
 {
@@ -15,14 +17,20 @@ class CategoryRepository
 	/**
 	 * CategoryRepository constructor.
 	 *
-	 * @param Category $model
-	 * @param CategoryTransformer $transformer
 	 */
-	public function __construct(Category $model, CategoryTransformer $transformer)
+	public function __construct()
     {
-        $this->model = $model;
-        $this->transformer = $transformer;
+        $this->transformer = new CategoryTransformer();
     }
+
+    // Singleton
+	private function getModelInstance()
+	{
+		if ( ! $this->model instanceof Category) {
+			$this->model = new Category();
+		}
+		return $this->model;
+	}
 
     /**
      * Index Path
@@ -30,11 +38,12 @@ class CategoryRepository
      */
     public function getAllByUser()
     {
-        $user = request()->user();
+        //$user = request()->user();
+        $user = User::find(2);
         if ( $user ) {
-            $resource = $this->transformer->collection($user->categories);
+            $resource = array("data" => ["categories" => $this->transformer->collection($user->categories)], "code" => 200);
         } else {
-            $resource = array("message" => "User doesn't exist");
+            $resource = array("data" => ["error" => array("message" => "User doesn't exist")], "code" => 404);
         }
         return $resource;
     }
@@ -49,9 +58,10 @@ class CategoryRepository
     public function createByUser($params)
     {
         $user = request()->user();
+	    $model = $this->getModelInstance();
         if ( $user ) {
             $params["user_id"] = $user->id;
-            $this->model::create($params);
+	        $model::create($params);
             $response = array("text" => ["message" => "category_created"], "status" => 201);
         } else {
             $response = array("text" => ["message" => "User doesn't exist"], "status" => 404);
@@ -70,9 +80,10 @@ class CategoryRepository
     public function showByUserAndCategoryID($category_id)
     {
         $user = request()->user();
+	    $model = $this->getModelInstance();
 
         if ( $user ) {
-            $category = $this->model::where('user_id', $user->id)
+            $category = $model::where('user_id', $user->id)
                 ->where('id', $category_id)
                 ->firstOrFail();
 
@@ -99,8 +110,9 @@ class CategoryRepository
     public function updateByUser($params, $category_id)
     {
         $user = request()->user();
+	    $model = $this->getModelInstance();
         if ( $user ) {
-            $category = $this->model::where('user_id', $user->id)
+            $category = $model::where('user_id', $user->id)
                                     ->where('id', $category_id)
                                     ->firstOrFail();
 
@@ -128,19 +140,20 @@ class CategoryRepository
     public function deleteByUser($category_id)
     {
         $user = request()->user();
+	    $model = $this->getModelInstance();
         if ( $user ) {
-            $category = $this->model::where('user_id', $user->id)
+            $category = $model::where('user_id', $user->id)
                 ->where('id', $category_id)
                 ->firstOrFail();
 
             if ( $category ) {
                 $category->delete();
-                $response = array("text" => ["message" => "Category deleted successful"], "status" => 201);
+                $response = array("data" => ["message" => "Category deleted successful"], "status" => 201);
             } else {
-                $response = array("text" => ["message" => "Category doesn't found"], "status" => 404);
+                $response = array("error" => ["message" => "Category doesn't found"], "status" => 404);
             }
         } else {
-            $response = array("text" => ["message" => "User doesn't exist"], "status" => 404);
+            $response = array("error" => ["message" => "User doesn't exist"], "status" => 404);
         }
 
         return $response;

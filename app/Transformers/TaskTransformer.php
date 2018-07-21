@@ -2,49 +2,23 @@
 
 namespace App\Transformers;
 
-use App\Http\Transformers\TransformerInterface;
+use App\Http\Transformers\Transformer;
+use Illuminate\Database\Eloquent\Model;
 
-class TaskTransformer implements TransformerInterface
+class TaskTransformer extends Transformer
 {
 	/**
 	 * Transform a task model.
 	 *
-	 * @param  \App\Task $task
+	 * @param Model $task
+	 *
 	 * @return array
 	 */
-	public function transform($task)
+	protected function transform(Model $task)
 	{
 		return [
 			'id' => (int) $task->id,
 			'task' => $task->description,
 		];
-	}
-
-	/**
-	 * Transform a collection of tasks.
-	 *
-	 * @param  \Illuminate\Database\Eloquent\Collection $tasks
-	 * @return array
-	 */
-	public function collection($tasks)
-	{
-		$resource = [];
-
-		foreach ($tasks as $task) {
-			$resource[] = $this->transform($task);
-		}
-
-		return $resource;
-	}
-
-	/**
-	 * Transform a single task model.
-	 *
-	 * @param  \App\Task $task
-	 * @return array
-	 */
-	public function item($task)
-	{
-		return $this->transform($task);
 	}
 }
