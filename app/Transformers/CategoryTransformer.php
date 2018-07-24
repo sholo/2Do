@@ -2,7 +2,6 @@
 
 namespace App\Transformers;
 
-use App\Http\Transformers\Transformer;
 use Illuminate\Database\Eloquent\Model;
 
 class CategoryTransformer extends Transformer
@@ -16,9 +15,13 @@ class CategoryTransformer extends Transformer
 	 */
 	protected function transform(Model $category)
 	{
+		$resource = $this->modelToArray($category);
 		return [
-			'id' => (int) $category->id,
-			'category' => $category->name,
+			'id' => (int) $resource['id'],
+			'category' => $resource['name'],
+			'_links' => [
+				"tasks" => $resource['tasks_ids']
+			]
 		];
 	}
 }

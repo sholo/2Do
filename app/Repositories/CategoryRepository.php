@@ -39,9 +39,11 @@ class CategoryRepository
     public function getAllByUser()
     {
         //$user = request()->user();
-        $user = User::find(2);
+        $user = User::find(1);
         if ( $user ) {
-            $resource = array("data" => ["categories" => $this->transformer->collection($user->categories)], "code" => 200);
+            $resource = array("data" => [
+            	"categories" => $this->transformer->collection($user->categories)
+            ], "code" => 200);
         } else {
             $resource = array("data" => ["error" => array("message" => "User doesn't exist")], "code" => 404);
         }

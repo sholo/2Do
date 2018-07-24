@@ -22,6 +22,8 @@ class Category extends Model
 		'user_id', 'name',
 	];
 
+	protected $appends = ['tasks_ids'];
+
     /**
      * Get the tasks for this category.
      */
@@ -36,5 +38,10 @@ class Category extends Model
     public function user()
     {
         return $this->belongsTo('App\User');
+    }
+
+    public function getTasksIdsAttribute()
+    {
+	    return $this->tasks->pluck('id');
     }
 }

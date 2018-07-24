@@ -2,7 +2,6 @@
 
 namespace App\Transformers;
 
-use App\Http\Transformers\Transformer;
 use Illuminate\Database\Eloquent\Model;
 
 class TaskTransformer extends Transformer
@@ -16,9 +15,10 @@ class TaskTransformer extends Transformer
 	 */
 	protected function transform(Model $task)
 	{
+		$resource = $this->modelToArray($task);
 		return [
-			'id' => (int) $task->id,
-			'task' => $task->description,
+			'id' => (int) $resource['id'],
+			'task' => $resource['description'],
 		];
 	}
 }

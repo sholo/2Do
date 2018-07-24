@@ -3,19 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\CategoryRepository;
-use App\Transformers\CategoryTransformer;
 use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
-    private $category;
+    private $category_repository;
 
 	/**
 	 * CategoryController constructor.
 	 */
 	public function __construct()
     {
-        $this->category = new CategoryRepository();
+        $this->category_repository = new CategoryRepository();
     }
 
     /**
@@ -25,7 +24,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $resource = $this->category->getAllByUser();
+        $resource = $this->category_repository->getAllByUser();
         return response()->json($resource["data"], $resource["code"]);
     }
 
@@ -37,7 +36,7 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        $response = $this->category->createByUser($request->all());
+        $response = $this->category_repository->createByUser($request->all());
 	    return response()->json($response['text'], $response['status']);
     }
 
@@ -50,7 +49,7 @@ class CategoryController extends Controller
 	 */
     public function show($category_id)
     {
-        $category = $this->category->showByUserAndCategoryID($category_id);
+        $category = $this->category_repository->showByUserAndCategoryID($category_id);
         return response()->json($category);
     }
 
@@ -64,7 +63,7 @@ class CategoryController extends Controller
 	 */
     public function update(Request $request, $category_id)
     {
-        $response = $this->category->updateByUser($request->all(), $category_id);
+        $response = $this->category_repository->updateByUser($request->all(), $category_id);
 	    return response()->json($response);
     }
 
@@ -78,7 +77,7 @@ class CategoryController extends Controller
 	 */
     public function destroy($category_id)
     {
-	    $response = $this->category->deleteByUser($category_id);
+	    $response = $this->category_repository->deleteByUser($category_id);
 	    return response()->json($response['text'], $response['status']);
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Transformers;
+namespace App\Transformers;
 
 use Illuminate\Database\Eloquent\Model;
 
@@ -16,7 +16,7 @@ abstract class Transformer
 	/**
 	 * Transform a collection of elements.
 	 *
-	 * @param $collection
+	 * @param array $collection
 	 *
 	 * @return array
 	 */
@@ -41,5 +41,15 @@ abstract class Transformer
 	public function item(Model $object_model)
 	{
 		return $this->transform($object_model);
+	}
+
+	/**
+	 * @param Model $object_model
+	 *
+	 * @return array
+	 */
+	public function modelToArray(Model $object_model)
+	{
+		return $object_model->toArray();
 	}
 }
