@@ -8,13 +8,14 @@ use App\Transformers\TaskTransformer;
 use App\Task;
 use Illuminate\Http\Request;
 
-class TaskController extends Controller
+class TaskController extends ApiController
 {
     private $task;
     private $transformer;
 
     public function __construct(TaskRepository $task, TaskTransformer $transformer)
     {
+	    parent::__construct();
         $this->task = $task;
         $this->transformer = $transformer;
     }

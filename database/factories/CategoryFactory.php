@@ -12,11 +12,12 @@
 */
 
 /** @var \Illuminate\Database\Eloquent\Factory $factory */
+
 $factory->define(App\Category::class, function (Faker\Generator $faker) {
 	return [
 		'user_id' => function () {
 			return factory(App\User::class)->create()->id;
 		},
-		'name' => $faker->name,
+		'name' => $faker->word,
 	];
 });

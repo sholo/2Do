@@ -3,18 +3,21 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\CategoryRepository;
+use App\Transformers\CategoryTransformer;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
-class CategoryController extends Controller
+class CategoryController extends ApiController
 {
-    private $category_repository;
+    private $repository;
 
 	/**
 	 * CategoryController constructor.
 	 */
 	public function __construct()
     {
-        $this->category_repository = new CategoryRepository();
+    	parent::__construct();
+	    $this->repository = new CategoryRepository();
     }
 
     /**
@@ -24,60 +27,75 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $resource = $this->category_repository->getAllByUser();
-        return response()->json($resource["data"], $resource["code"]);
+        $categories = $this->repository->getAllOfUser();
+        return $this->respondWithCollection($categories, new CategoryTransformer);
     }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+     *
+     * @return \Illuminate\Support\Facades\Response
      */
     public function store(Request $request)
     {
-        $response = $this->category_repository->createByUser($request->all());
-	    return response()->json($response['text'], $response['status']);
+        $category = $this->repository->createByUser($request->all());
+	    if (! $category instanceof Model) {
+		    return $this->errorWrongArgs();
+	    }
+
+	    return $this->respondWithItem($category, new CategoryTransformer);
     }
 
 	/**
 	 * Display the specified resource.
 	 *
-	 * @param  int $category_id
+	 * @param  int $id
 	 *
-	 * @return \Illuminate\Http\JsonResponse
+	 * @return \Illuminate\Support\Facades\Response
 	 */
-    public function show($category_id)
+    public function show($id)
     {
-        $category = $this->category_repository->showByUserAndCategoryID($category_id);
-        return response()->json($category);
+        $category = $this->repository->showCategoryOfUser($id);
+	    if (! $category instanceof Model) {
+		    return $this->errorNotFound();
+	    }
+
+	    return $this->respondWithItem($category, new CategoryTransformer);
     }
 
 	/**
 	 * Update the specified resource in storage.
 	 *
 	 * @param  \Illuminate\Http\Request $request
-	 * @param  int $category_id
+	 * @param  int $id
 	 *
-	 * @return \Illuminate\Http\Response
+	 * @return \Illuminate\Support\Facades\Response
 	 */
-    public function update(Request $request, $category_id)
+    public function update(Request $request, $id)
     {
-        $response = $this->category_repository->updateByUser($request->all(), $category_id);
-	    return response()->json($response);
+	    $category = $this->repository->updateByUser($request->all(), $id);
+	    if (! $category instanceof Model) {
+		    return $this->errorWrongArgs();
+	    }
+	    return $this->respondWithItem($category, new CategoryTransformer);
     }
 
 	/**
 	 * Remove the specified resource from storage.
 	 *
-	 * @param  int $category_id
+	 * @param  int $id
 	 *
-	 * @return \Illuminate\Http\Response
+	 * @return \Illuminate\Support\Facades\Response
 	 * @throws \Exception
 	 */
-    public function destroy($category_id)
+    public function destroy($id)
     {
-	    $response = $this->category_repository->deleteByUser($category_id);
-	    return response()->json($response['text'], $response['status']);
+	    $category = $this->repository->deleteByUser($id);
+	    if (! $category instanceof Model) {
+		    return $this->errorNotFound();
+	    }
+	    return $this->respondWithItem($category, new CategoryTransformer);
     }
 }

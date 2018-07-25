@@ -11,8 +11,8 @@ class CategoryRepository
     /**
      * @var $model
      */
-    private $model;
     private $transformer;
+    private $user;
 
 	/**
 	 * CategoryRepository constructor.
@@ -21,33 +21,30 @@ class CategoryRepository
 	public function __construct()
     {
         $this->transformer = new CategoryTransformer();
+        $this->user = $this->checkUserExist();
     }
 
-    // Singleton
-	private function getModelInstance()
+	private function checkUserExist()
 	{
-		if ( ! $this->model instanceof Category) {
-			$this->model = new Category();
+		return ( new \App\User )->find(1);
+
+		$user = request()->user();
+		if ( $user instanceof User ) {
+			return $user;
 		}
-		return $this->model;
+		return null;
 	}
 
     /**
      * Index Path
      * @return array
      */
-    public function getAllByUser()
+    public function getAllOfUser()
     {
-        //$user = request()->user();
-        $user = User::find(1);
-        if ( $user ) {
-            $resource = array("data" => [
-            	"categories" => $this->transformer->collection($user->categories)
-            ], "code" => 200);
-        } else {
-            $resource = array("data" => ["error" => array("message" => "User doesn't exist")], "code" => 404);
-        }
-        return $resource;
+	    if ( $this->user instanceof User ) {
+		    return $this->user->categories;
+	    }
+	    return null;
     }
 
 	/**
@@ -59,105 +56,81 @@ class CategoryRepository
 	 */
     public function createByUser($params)
     {
-        $user = request()->user();
-	    $model = $this->getModelInstance();
-        if ( $user ) {
-            $params["user_id"] = $user->id;
-	        $model::create($params);
-            $response = array("text" => ["message" => "category_created"], "status" => 201);
-        } else {
-            $response = array("text" => ["message" => "User doesn't exist"], "status" => 404);
-        }
-
-        return $response;
+	    if ( $this->user instanceof User ) {
+		    $params["user_id"] = $this->user->id;
+		    return $this->user->categories()->create($params);
+	    }
+	    return null;
     }
 
 	/**
 	 * Index Path
 	 *
-	 * @param $category_id
+	 * @param $id
 	 *
 	 * @return array
 	 */
-    public function showByUserAndCategoryID($category_id)
+    public function showCategoryOfUser($id)
     {
-        $user = request()->user();
-	    $model = $this->getModelInstance();
-
-        if ( $user ) {
-            $category = $model::where('user_id', $user->id)
-                ->where('id', $category_id)
-                ->firstOrFail();
-
-            if ( $category ) {
-                $response = $this->transformer->item($category);
-            } else {
-                $response = array("message" => "Category doesn't found");
-            }
-        } else {
-            $response = array("message" => "User doesn't exist");
+        if ( $this->user instanceof User ) {
+            return $this->user->categories()
+                              ->where('user_id', $this->user->id)
+                              ->where('id', $id)
+                              ->first();
         }
 
-        return $response;
+        return null;
     }
 
 	/**
 	 * Index Path
 	 *
 	 * @param $params
-	 * @param $category_id
+	 * @param $id
 	 *
 	 * @return array
 	 */
-    public function updateByUser($params, $category_id)
+    public function updateByUser($params, $id)
     {
-        $user = request()->user();
-	    $model = $this->getModelInstance();
-        if ( $user ) {
-            $category = $model::where('user_id', $user->id)
-                                    ->where('id', $category_id)
-                                    ->firstOrFail();
+	    if ( $this->user instanceof User ) {
+		    $category = $this->user->categories()
+		                           ->where('user_id', $this->user->id)
+		                           ->where('id', $id)
+		                           ->first();
 
-            if ( $category ) {
-                $category->fill($params)->save();
-                $response = $this->transformer->item($category);
-            } else {
-                $response = array("message" => "Category doesn't found");
-            }
-        } else {
-            $response = array("message" => "User doesn't exist");
-        }
+		    if ( $category instanceof Category) {
+			    $category->fill($params)->save();
+			    return $category;
+		    }
+		    return null;
+	    }
 
-        return $response;
+	    return null;
     }
 
 	/**
 	 * Index Path
 	 *
-	 * @param $category_id
+	 * @param $id
 	 *
 	 * @return array
 	 * @throws \Exception
 	 */
-    public function deleteByUser($category_id)
+    public function deleteByUser($id)
     {
-        $user = request()->user();
-	    $model = $this->getModelInstance();
-        if ( $user ) {
-            $category = $model::where('user_id', $user->id)
-                ->where('id', $category_id)
-                ->firstOrFail();
 
-            if ( $category ) {
-                $category->delete();
-                $response = array("data" => ["message" => "Category deleted successful"], "status" => 201);
-            } else {
-                $response = array("error" => ["message" => "Category doesn't found"], "status" => 404);
+	    if ( $this->user instanceof User ) {
+            $category = $this->user->categories()
+                                   ->where('user_id', $this->user->id)
+                                   ->where('id', $id)
+                                   ->first();
+
+            if ( $category instanceof Category) {
+                return $category->delete();
             }
-        } else {
-            $response = array("error" => ["message" => "User doesn't exist"], "status" => 404);
+            return null;
         }
 
-        return $response;
+        return null;
     }
 }
