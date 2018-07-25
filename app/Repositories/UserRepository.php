@@ -3,7 +3,7 @@ namespace App\Repositories;
 
 use App\User;
 
-class UserRepository
+class UserRepository extends AbstractRepository
 {
     /**
      * @var $model
@@ -11,11 +11,7 @@ class UserRepository
     private $model;
     public function __construct(User $model)
     {
+        parent::__construct();
         $this->model = $model;
-    }
-
-    public function getUserByID($user_id)
-    {
-
     }
 }

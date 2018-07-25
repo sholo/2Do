@@ -2,11 +2,12 @@
 namespace App\Repositories;
 
 use App\Category;
+use App\Http\Controllers\PrepareResponse;
 use App\User;
 use App\Transformers\CategoryTransformer;
 
 
-class CategoryRepository
+class CategoryRepository extends AbstractRepository
 {
     /**
      * @var $model
@@ -20,6 +21,7 @@ class CategoryRepository
 	 */
 	public function __construct()
     {
+        parent::__construct(new PrepareResponse);
         $this->transformer = new CategoryTransformer();
         $this->user = $this->checkUserExist();
     }
@@ -42,9 +44,9 @@ class CategoryRepository
     public function getAllOfUser()
     {
 	    if ( $this->user instanceof User ) {
-		    return $this->user->categories;
+		    return $this->prepare_response->respondWithCollection($this->user->categories, new CategoryTransformer);
 	    }
-	    return null;
+	    return $this->prepare_response->errorUnauthorized();
     }
 
 	/**

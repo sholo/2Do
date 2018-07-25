@@ -7,7 +7,7 @@ use App\Transformers\CategoryTransformer;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
-class CategoryController extends ApiController
+class CategoryController extends ContentNegotiationController
 {
     private $repository;
 
@@ -16,7 +16,6 @@ class CategoryController extends ApiController
 	 */
 	public function __construct()
     {
-    	parent::__construct();
 	    $this->repository = new CategoryRepository();
     }
 
@@ -27,8 +26,8 @@ class CategoryController extends ApiController
      */
     public function index()
     {
-        $categories = $this->repository->getAllOfUser();
-        return $this->respondWithCollection($categories, new CategoryTransformer);
+        list($response_array, $status_code) = $this->repository->getAllOfUser();
+        return $this->responseWith($response_array, $status_code);
     }
 
     /**

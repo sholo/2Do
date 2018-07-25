@@ -5,7 +5,7 @@ use App\Category;
 use App\Task;
 use App\Transformers\TaskTransformer;
 
-class TaskRepository
+class TaskRepository extends AbstractRepository
 {
     /**
      * @var $model
@@ -15,6 +15,7 @@ class TaskRepository
 
     public function __construct(Task $model, TaskTransformer $transformer)
     {
+        parent::__construct();
         $this->model = $model;
         $this->transformer = $transformer;
     }

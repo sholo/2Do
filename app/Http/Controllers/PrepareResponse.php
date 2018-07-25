@@ -4,23 +4,17 @@ namespace App\Http\Controllers;
 
 use App\Transformers\Transformer;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Response;
 
-class ApiController extends Controller
+class PrepareResponse
 {
 	const CODE_WRONG_ARGS = 'GEN-FUBARGS';
     const CODE_NOT_FOUND = 'GEN-LIKETHEWIND';
     const CODE_INTERNAL_ERROR = 'GEN-AAAGGH';
     const CODE_UNAUTHORIZED = 'GEN-MAYBGTFO';
     const CODE_FORBIDDEN = 'GEN-GTFO';
+    const CODE_INVALID_MIME_TYPE = 'GEN-IVMITYP';
 
 	protected $statusCode = 200;
-	private $hateoas;
-
-	public function __construct()
-	{
-		$this->hateoas = new Hateoas();
-	}
 
 	public function getStatusCode()
 	{
@@ -33,25 +27,21 @@ class ApiController extends Controller
 		return $this;
 	}
 
-	protected function respondWithItem(Model $item, Transformer $callback)
+	public function respondWithItem(Model $item, Transformer $callback)
 	{
 		$resource = $callback->item($item);
-		$rootScope = $this->hateoas->createData($resource);
-
-		return $this->respondWithArray($rootScope);
+		return $this->respondWithArray($resource);
 	}
 
-	protected function respondWithCollection($collection, Transformer $callback)
+	public function respondWithCollection($collection, Transformer $callback)
 	{
 		$resource = $callback->collection($collection);
-		$rootScope = $this->hateoas->createData($resource);
-
-		return $this->respondWithArray($rootScope);
+		return $this->respondWithArray($resource);
 	}
 
-	protected function respondWithArray(array $array, array $headers = [])
+	protected function respondWithArray(array $array)
 	{
-		return response()->json($array, $this->statusCode, $headers);
+		return [$array, $this->statusCode];
 	}
 
 	/** ---------ERROR SECTION--------- **/
@@ -78,7 +68,7 @@ class ApiController extends Controller
 	/**
 	* Generates a Response with a 403 HTTP header and a given message.
 	*
-	* @return Response
+	* @return array
 	*/
 	public function errorForbidden($message = 'Forbidden')
 	{
@@ -89,7 +79,7 @@ class ApiController extends Controller
 	/**
 	* Generates a Response with a 500 HTTP header and a given message.
 	*
-	* @return Response
+	* @return array
 	*/
 	public function errorInternalError($message = 'Internal Error')
 	{
@@ -100,7 +90,7 @@ class ApiController extends Controller
 	/**
 	* Generates a Response with a 404 HTTP header and a given message.
 	*
-	* @return Response
+	* @return array
 	*/
 	public function errorNotFound($message = 'Resource Not Found')
 	{
@@ -111,7 +101,7 @@ class ApiController extends Controller
 	/**
 	* Generates a Response with a 401 HTTP header and a given message.
 	*
-	* @return Response
+	* @return array
 	*/
 	public function errorUnauthorized($message = 'Unauthorized')
 	{
@@ -122,7 +112,7 @@ class ApiController extends Controller
 	/**
 	* Generates a Response with a 400 HTTP header and a given message.
 	*
-	* @return Response
+	* @return array
 	*/
 	public function errorWrongArgs($message = 'Wrong Arguments')
 	{
