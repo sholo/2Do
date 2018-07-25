@@ -2,22 +2,21 @@
 namespace App\Repositories;
 
 use App\Category;
+use App\Http\Controllers\PrepareResponse;
 use App\Task;
 use App\Transformers\TaskTransformer;
+use App\User;
 
 class TaskRepository extends AbstractRepository
 {
-    /**
-     * @var $model
-     */
-    private $model;
-    private $transformer;
+	private $transformer;
+	private $user;
 
     public function __construct(Task $model, TaskTransformer $transformer)
     {
-        parent::__construct();
-        $this->model = $model;
-        $this->transformer = $transformer;
+        parent::__construct(new PrepareResponse);
+	    $this->transformer = new TaskTransformer();
+	    $this->user = $this->checkUserExist();
     }
 
     /**
@@ -26,22 +25,19 @@ class TaskRepository extends AbstractRepository
      */
     public function getAllByCategoryAndUser($category_id)
     {
-        $user = request()->user();
-        if ( $user ) {
-            $category = Category::where('id', $category_id)
-                ->where('user_id', $user->id)
-                ->first();
+	    if ( $this->user instanceof User ) {
+            $category = ( new Category )
+	            ->where('id', $category_id)
+	            ->where('user_id', $this->user->id)
+	            ->first();
 
-            if ( $category ) {
-                $response = $this->transformer->collection($category->tasks);
-            } else {
-                $response = array("text" => ["message" => "Category doesn't exist"], "status" => 404);
+            if ( $category instanceof Category) {
+	            return $this->prepare_response->respondWithCollection($category->tasks, new TaskTransformer);
             }
-        } else {
-            $response = array("text" => ["message" => "User doesn't exist"], "status" => 404);
+		    return $this->prepare_response->errorNotFound();
         }
 
-        return $response;
+        return $this->prepare_response->errorUnauthorized();
     }
 
     /**
@@ -51,24 +47,25 @@ class TaskRepository extends AbstractRepository
      */
     public function createByCategoryAndUser($params, $category_id)
     {
-        $user = request()->user();
-        if ( $user ) {
-            $category = Category::where('id', $category_id)
-                ->where('user_id', $user->id)
-                ->first();
+	    if ( $this->user instanceof User ) {
+            $category = ( new Category )
+	            ->where('id', $category_id)
+	            ->where('user_id', $this->user->id)
+	            ->first();
 
-            if ( $category ) {
+            if ( $category instanceof Category) {
                 $params["category_id"] = $category->id;
-                $this->model::create($params);
-                $response = array("text" => ["message" => "task_created"], "status" => 201);
-            } else {
-                $response = array("text" => ["message" => "Category doesn't exist"], "status" => 404);
+
+	            return $this->prepare_response->respondWithItem(
+		            $category->tasks()->create($params),
+		            new TaskTransformer
+	            );
             }
-        } else {
-            $response = array("text" => ["message" => "User doesn't exist"], "status" => 404);
+
+		    return $this->prepare_response->errorNotFound();
         }
 
-        return $response;
+	    return $this->prepare_response->errorUnauthorized();
     }
 
 	/**
@@ -81,32 +78,31 @@ class TaskRepository extends AbstractRepository
 	 */
 	public function showByUserTaskIDAndCategoryID($category_id, $task_id)
 	{
-		$user = request()->user();
-
-		if ( $user ) {
-			$category = $user->categories()
+		if ( $this->user instanceof User ) {
+			$category = $this->user->categories()
 			             ->where('id',$category_id)
-			             ->firstOrFail();
+			             ->first();
 
-			if ( $category ) {
+			if ( $category instanceof Category) {
 				$task = $category
 					->tasks()
 					->where('id',$task_id)
-					->firstOrFail();
+					->first();
 
-				if ( $task ) {
-					$response = $this->transformer->item($task);
-				} else {
-					$response = array("message" => "Task doesn't found");
+				if ( $task instanceof Task) {
+					return $this->prepare_response->respondWithItem(
+						$task,
+						new TaskTransformer
+					);
 				}
-			} else {
-				$response = array("message" => "Category doesn't found");
+
+				return $this->prepare_response->errorNotFound();
 			}
-		} else {
-			$response = array("message" => "User doesn't exist");
+
+			return $this->prepare_response->errorNotFound();
 		}
 
-		return $response;
+		return $this->prepare_response->errorUnauthorized();
 	}
 
 	/**
@@ -115,32 +111,33 @@ class TaskRepository extends AbstractRepository
     */
     public function updateByUserTaskIDandCategoryID($params, $category_id, $task_id)
     {
-        $user = request()->user();
-        if ( $user ) {
-            $category = Category::where('user_id', $user->id)
-                ->where('id', $category_id)
-                ->firstOrFail();
+	    if ( $this->user instanceof User ) {
+            $category = ( new Category )
+	            ->where('user_id', $this->user->id)
+	            ->where('id', $category_id)
+	            ->first();
 
-            if ( $category ) {
+            if ( $category instanceof Category) {
                 $task = $category
                     ->tasks()
                     ->where('id',$task_id)
-                    ->firstOrFail();
+                    ->first();
 
-                if ( $task ) {
+                if ( $task instanceof Task) {
                     $task->fill($params)->save();
-                    $response = $this->transformer->item($task);
-                } else {
-                    $response = array("message" => "Task doesn't found");
+	                return $this->prepare_response->respondWithItem(
+		                $task,
+		                new TaskTransformer
+	                );
                 }
-            } else {
-                $response = array("message" => "Category doesn't found");
+
+	            return $this->prepare_response->errorNotFound();
             }
-        } else {
-            $response = array("message" => "User doesn't exist");
+
+		    return $this->prepare_response->errorNotFound();
         }
 
-        return $response;
+	    return $this->prepare_response->errorUnauthorized();
     }
 
     /**
@@ -149,31 +146,29 @@ class TaskRepository extends AbstractRepository
      */
     public function deleteByUserTaskIDandCategoryID($category_id, $task_id)
     {
-        $user = request()->user();
-        if ( $user ) {
-            $category = Category::where('user_id', $user->id)
-                ->where('id', $category_id)
-                ->firstOrFail();
+	    if ( $this->user instanceof User ) {
+            $category = ( new Category )
+	            ->where('user_id', $this->user->id)
+	            ->where('id', $category_id)
+	            ->first();
 
-            if ( $category ) {
+            if ( $category instanceof Category) {
                 $task = $category
                     ->tasks()
                     ->where('id',$task_id)
-                    ->firstOrFail();
+                    ->first();
 
-                if ( $task ) {
+                if ( $task instanceof Task) {
                     $task->delete();
-                    $response = array("text" => ["message" => "Task deleted successful"], "status" => 201);
-                } else {
-                    $response = array("message" => "Task doesn't found");
+	                return $this->prepare_response->respondWithoutItem("Task");
                 }
-            } else {
-                $response = array("text" => ["message" => "Category doesn't found"], "status" => 404);
+
+	            return $this->prepare_response->errorNotFound();
             }
-        } else {
-            $response = array("text" => ["message" => "User doesn't exist"], "status" => 404);
+
+		    return $this->prepare_response->errorNotFound();
         }
 
-        return $response;
+	    return $this->prepare_response->errorUnauthorized();
     }
 }

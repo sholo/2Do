@@ -30,13 +30,27 @@ class PrepareResponse
 	public function respondWithItem(Model $item, Transformer $callback)
 	{
 		$resource = $callback->item($item);
-		return $this->respondWithArray($resource);
+		return $this->respondWithArray(array('data' => $resource));
+	}
+
+	public function respondWithoutItem($model_type = "", $message = "The element of this MODEL type was successfully deleted")
+	{
+		if ( $model_type !== "" ) {
+			$message = str_replace("MODEL", $model_type, $message);
+		}
+
+		return $this->respondWithArray([
+			'data' => [
+				'http_code' => $this->statusCode,
+				'message' => $message,
+			]
+		]);
 	}
 
 	public function respondWithCollection($collection, Transformer $callback)
 	{
 		$resource = $callback->collection($collection);
-		return $this->respondWithArray($resource);
+		return $this->respondWithArray(array('data' => $resource));
 	}
 
 	protected function respondWithArray(array $array)

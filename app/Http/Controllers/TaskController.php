@@ -27,20 +27,22 @@ class TaskController extends ContentNegotiationController
      */
     public function index($category_id)
     {
-        $resource = $this->task->getAllByCategoryAndUser($category_id);
-        return response()->json($resource);
+	    list($response_array, $status_code) = $this->task->getAllByCategoryAndUser($category_id);
+	    return $this->responseWith($response_array, $status_code);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
+	/**
+	 * Store a newly created resource in storage.
+	 *
+	 * @param  \Illuminate\Http\Request $request
+	 * @param $category_id
+	 *
+	 * @return \Illuminate\Http\Response
+	 */
     public function store(Request $request, $category_id)
     {
-        $response = $this->task->createByCategoryAndUser($request->all(), $category_id);
-        return response()->json($response['text'], $response['status']);
+	    list($response_array, $status_code) = $this->task->createByCategoryAndUser($request->all(), $category_id);
+	    return $this->responseWith($response_array, $status_code);
     }
 
 	/**
@@ -53,8 +55,8 @@ class TaskController extends ContentNegotiationController
 	 */
     public function show($category_id, $task_id)
     {
-	    $resource = $this->task->showByUserTaskIDAndCategoryID($category_id, $task_id);
-	    return response()->json($resource);
+	    list($response_array, $status_code) = $this->task->showByUserTaskIDAndCategoryID($category_id, $task_id);
+	    return $this->responseWith($response_array, $status_code);
     }
 
     /**
@@ -67,8 +69,8 @@ class TaskController extends ContentNegotiationController
      */
     public function update(Request $request, $category_id, $task_id)
     {
-        $response = $this->task->updateByUserTaskIDandCategoryID($request->all(), $category_id, $task_id);
-        return response()->json($response);
+	    list($response_array, $status_code) = $this->task->updateByUserTaskIDandCategoryID($request->all(), $category_id, $task_id);
+	    return $this->responseWith($response_array, $status_code);
     }
 
     /**
@@ -81,7 +83,7 @@ class TaskController extends ContentNegotiationController
      */
     public function destroy($category_id, $task_id)
     {
-        $response = $this->task->deleteByUserTaskIDandCategoryID($category_id, $task_id);
-        return response()->json($response['text'], $response['status']);
+	    list($response_array, $status_code) = $this->task->deleteByUserTaskIDandCategoryID($category_id, $task_id);
+	    return $this->responseWith($response_array, $status_code);
     }
 }

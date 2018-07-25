@@ -39,12 +39,8 @@ class CategoryController extends ContentNegotiationController
      */
     public function store(Request $request)
     {
-        $category = $this->repository->createByUser($request->all());
-	    if (! $category instanceof Model) {
-		    return $this->errorWrongArgs();
-	    }
-
-	    return $this->respondWithItem($category, new CategoryTransformer);
+	    list($response_array, $status_code) = $this->repository->createByUser($request->all());
+	    return $this->responseWith($response_array, $status_code);
     }
 
 	/**
@@ -56,12 +52,8 @@ class CategoryController extends ContentNegotiationController
 	 */
     public function show($id)
     {
-        $category = $this->repository->showCategoryOfUser($id);
-	    if (! $category instanceof Model) {
-		    return $this->errorNotFound();
-	    }
-
-	    return $this->respondWithItem($category, new CategoryTransformer);
+	    list($response_array, $status_code) = $this->repository->showCategoryOfUser($id);
+	    return $this->responseWith($response_array, $status_code);
     }
 
 	/**
@@ -74,11 +66,8 @@ class CategoryController extends ContentNegotiationController
 	 */
     public function update(Request $request, $id)
     {
-	    $category = $this->repository->updateByUser($request->all(), $id);
-	    if (! $category instanceof Model) {
-		    return $this->errorWrongArgs();
-	    }
-	    return $this->respondWithItem($category, new CategoryTransformer);
+	    list($response_array, $status_code) = $this->repository->updateByUser($request->all(), $id);
+	    return $this->responseWith($response_array, $status_code);
     }
 
 	/**
@@ -91,10 +80,7 @@ class CategoryController extends ContentNegotiationController
 	 */
     public function destroy($id)
     {
-	    $category = $this->repository->deleteByUser($id);
-	    if (! $category instanceof Model) {
-		    return $this->errorNotFound();
-	    }
-	    return $this->respondWithItem($category, new CategoryTransformer);
+	    list($response_array, $status_code) = $this->repository->deleteByUser($id);
+	    return $this->responseWith($response_array, $status_code);
     }
 }

@@ -6,12 +6,8 @@ use App\Http\Controllers\PrepareResponse;
 use App\User;
 use App\Transformers\CategoryTransformer;
 
-
 class CategoryRepository extends AbstractRepository
 {
-    /**
-     * @var $model
-     */
     private $transformer;
     private $user;
 
@@ -25,17 +21,6 @@ class CategoryRepository extends AbstractRepository
         $this->transformer = new CategoryTransformer();
         $this->user = $this->checkUserExist();
     }
-
-	private function checkUserExist()
-	{
-		return ( new \App\User )->find(1);
-
-		$user = request()->user();
-		if ( $user instanceof User ) {
-			return $user;
-		}
-		return null;
-	}
 
     /**
      * Index Path
@@ -60,9 +45,13 @@ class CategoryRepository extends AbstractRepository
     {
 	    if ( $this->user instanceof User ) {
 		    $params["user_id"] = $this->user->id;
-		    return $this->user->categories()->create($params);
+
+		    return $this->prepare_response->respondWithItem(
+			    $this->user->categories()->create($params),
+			    new CategoryTransformer
+		    );
 	    }
-	    return null;
+	    return $this->prepare_response->errorUnauthorized();
     }
 
 	/**
@@ -75,13 +64,22 @@ class CategoryRepository extends AbstractRepository
     public function showCategoryOfUser($id)
     {
         if ( $this->user instanceof User ) {
-            return $this->user->categories()
-                              ->where('user_id', $this->user->id)
-                              ->where('id', $id)
-                              ->first();
+	        $category = $this->user->categories()
+	                   ->where('user_id', $this->user->id)
+	                   ->where('id', $id)
+	                   ->first();
+
+	        if ( $category instanceof Category) {
+		        return $this->prepare_response->respondWithItem(
+			        $category,
+			        new CategoryTransformer
+		        );
+	        }
+
+	        return $this->prepare_response->errorNotFound();
         }
 
-        return null;
+	    return $this->prepare_response->errorUnauthorized();
     }
 
 	/**
@@ -102,12 +100,15 @@ class CategoryRepository extends AbstractRepository
 
 		    if ( $category instanceof Category) {
 			    $category->fill($params)->save();
-			    return $category;
+			    return $this->prepare_response->respondWithItem(
+				    $category,
+				    new CategoryTransformer
+			    );
 		    }
-		    return null;
+		    return $this->prepare_response->errorNotFound();
 	    }
 
-	    return null;
+	    return $this->prepare_response->errorUnauthorized();
     }
 
 	/**
@@ -128,11 +129,12 @@ class CategoryRepository extends AbstractRepository
                                    ->first();
 
             if ( $category instanceof Category) {
-                return $category->delete();
+	            $category->delete();
+	            return $this->prepare_response->respondWithoutItem("Category");
             }
-            return null;
+		    return $this->prepare_response->errorNotFound();
         }
 
-        return null;
+	    $this->prepare_response->errorUnauthorized();
     }
 }

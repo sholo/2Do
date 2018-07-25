@@ -16,4 +16,15 @@ abstract class AbstractRepository
     {
         $this->prepare_response = $prepareResponse;
     }
+
+	protected function checkUserExist()
+	{
+		return ( new \App\User )->find(1);
+
+		$user = request()->user();
+		if ( $user instanceof User ) {
+			return $user;
+		}
+		return null;
+	}
 }
