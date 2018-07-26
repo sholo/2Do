@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Transformers\Transformer;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PrepareResponse
 {
@@ -16,23 +17,43 @@ class PrepareResponse
 
 	protected $statusCode = 200;
 
+	/**
+	 * @return int
+	 */
 	public function getStatusCode()
 	{
 		return $this->statusCode;
 	}
 
+	/**
+	 * @param $statusCode
+	 *
+	 * @return $this
+	 */
 	public function setStatusCode($statusCode)
 	{
 		$this->statusCode = $statusCode;
 		return $this;
 	}
 
+	/**
+	 * @param Model $item
+	 * @param Transformer $callback
+	 *
+	 * @return array
+	 */
 	public function respondWithItem(Model $item, Transformer $callback)
 	{
 		$resource = $callback->item($item);
 		return $this->respondWithArray(array('data' => $resource));
 	}
 
+	/**
+	 * @param string $model_type
+	 * @param string $message
+	 *
+	 * @return array
+	 */
 	public function respondWithoutItem($model_type = "", $message = "The element of this MODEL type was successfully deleted")
 	{
 		if ( $model_type !== "" ) {
@@ -47,12 +68,33 @@ class PrepareResponse
 		]);
 	}
 
-	public function respondWithCollection($collection, Transformer $callback)
+	/**
+	 * @param LengthAwarePaginator $collection
+	 * @param Transformer $callback
+	 *
+	 * @return array
+	 */
+	public function respondWithCollection(LengthAwarePaginator $collection, Transformer $callback)
 	{
 		$resource = $callback->collection($collection);
-		return $this->respondWithArray(array('data' => $resource));
+		return $this->respondWithArray([
+			'data' => $resource,
+			'pagination' => [
+				'total_count' => $collection->total(),
+				'total_pages' => ceil($collection->total() / $collection ->perPage()),
+				'current_page' => $collection->currentPage(),
+				'limit' => (int) $collection->perPage(),
+				'previous_page' => $collection->previousPageUrl() ? : (bool) $collection->previousPageUrl(),
+				'next_page' => $collection->nextPageUrl() ? : (bool) $collection->nextPageUrl(),
+			]
+		]);
 	}
 
+	/**
+	 * @param array $array
+	 *
+	 * @return array
+	 */
 	protected function respondWithArray(array $array)
 	{
 		return [$array, $this->statusCode];
@@ -60,7 +102,13 @@ class PrepareResponse
 
 	/** ---------ERROR SECTION--------- **/
 
-
+	/**
+	 *
+	 * @param $message
+	 * @param $errorCode
+	 *
+	 * @return array
+	 */
 	protected function respondWithError($message, $errorCode)
 	{
 		if ($this->statusCode === 200) {
@@ -80,10 +128,12 @@ class PrepareResponse
 	}
 
 	/**
-	* Generates a Response with a 403 HTTP header and a given message.
-	*
-	* @return array
-	*/
+	 * Generates a Response with a 403 HTTP header and a given message.
+	 *
+	 * @param string $message
+	 *
+	 * @return array
+	 */
 	public function errorForbidden($message = 'Forbidden')
 	{
 	    return $this->setStatusCode(403)
@@ -91,10 +141,12 @@ class PrepareResponse
 	}
 
 	/**
-	* Generates a Response with a 500 HTTP header and a given message.
-	*
-	* @return array
-	*/
+	 * Generates a Response with a 500 HTTP header and a given message.
+	 *
+	 * @param string $message
+	 *
+	 * @return array
+	 */
 	public function errorInternalError($message = 'Internal Error')
 	{
 		return $this->setStatusCode(500)
@@ -102,10 +154,12 @@ class PrepareResponse
 	}
 
 	/**
-	* Generates a Response with a 404 HTTP header and a given message.
-	*
-	* @return array
-	*/
+	 * Generates a Response with a 404 HTTP header and a given message.
+	 *
+	 * @param string $message
+	 *
+	 * @return array
+	 */
 	public function errorNotFound($message = 'Resource Not Found')
 	{
 	    return $this->setStatusCode(404)
@@ -113,10 +167,12 @@ class PrepareResponse
 	}
 
 	/**
-	* Generates a Response with a 401 HTTP header and a given message.
-	*
-	* @return array
-	*/
+	 * Generates a Response with a 401 HTTP header and a given message.
+	 *
+	 * @param string $message
+	 *
+	 * @return array
+	 */
 	public function errorUnauthorized($message = 'Unauthorized')
 	{
 	    return $this->setStatusCode(401)
@@ -124,10 +180,12 @@ class PrepareResponse
 	}
 
 	/**
-	* Generates a Response with a 400 HTTP header and a given message.
-	*
-	* @return array
-	*/
+	 * Generates a Response with a 400 HTTP header and a given message.
+	 *
+	 * @param string $message
+	 *
+	 * @return array
+	 */
 	public function errorWrongArgs($message = 'Wrong Arguments')
 	{
 	    return $this->setStatusCode(400)

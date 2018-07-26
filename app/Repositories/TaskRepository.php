@@ -6,6 +6,7 @@ use App\Http\Controllers\PrepareResponse;
 use App\Task;
 use App\Transformers\TaskTransformer;
 use App\User;
+use Illuminate\Support\Facades\Input;
 
 class TaskRepository extends AbstractRepository
 {
@@ -25,6 +26,11 @@ class TaskRepository extends AbstractRepository
      */
     public function getAllByCategoryAndUser($category_id)
     {
+	    $limit = Input::get('limit')? : self::DEFAULT_LIMIT;
+	    if ( $limit > self::MAXIMUM_LIMIT ) {
+		    $limit = self::MAXIMUM_LIMIT;
+	    }
+
 	    if ( $this->user instanceof User ) {
             $category = ( new Category )
 	            ->where('id', $category_id)
@@ -32,7 +38,7 @@ class TaskRepository extends AbstractRepository
 	            ->first();
 
             if ( $category instanceof Category) {
-	            return $this->prepare_response->respondWithCollection($category->tasks, new TaskTransformer);
+	            return $this->prepare_response->respondWithCollection($category->tasks()->paginate($limit), new TaskTransformer);
             }
 		    return $this->prepare_response->errorNotFound();
         }

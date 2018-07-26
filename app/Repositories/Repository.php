@@ -7,6 +7,8 @@ abstract class AbstractRepository
 {
 
     protected $prepare_response;
+	const DEFAULT_LIMIT = 3;
+	const MAXIMUM_LIMIT = 50;
 
     /**
      * Repository constructor.

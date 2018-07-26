@@ -2,7 +2,9 @@
 
 namespace App\Transformers;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 abstract class Transformer
 {
@@ -16,11 +18,11 @@ abstract class Transformer
 	/**
 	 * Transform a collection of elements.
 	 *
-	 * @param array $collection
+	 * @param LengthAwarePaginator $collection
 	 *
 	 * @return array
 	 */
-	public function collection($collection)
+	public function collection(LengthAwarePaginator $collection)
 	{
 		$resource = [];
 

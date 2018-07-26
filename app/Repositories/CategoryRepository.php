@@ -5,6 +5,7 @@ use App\Category;
 use App\Http\Controllers\PrepareResponse;
 use App\User;
 use App\Transformers\CategoryTransformer;
+use Illuminate\Support\Facades\Input;
 
 class CategoryRepository extends AbstractRepository
 {
@@ -28,8 +29,13 @@ class CategoryRepository extends AbstractRepository
      */
     public function getAllOfUser()
     {
+	    $limit = Input::get('limit')? : self::DEFAULT_LIMIT;
+	    if ( $limit > self::MAXIMUM_LIMIT ) {
+		    $limit = self::MAXIMUM_LIMIT;
+	    }
+
 	    if ( $this->user instanceof User ) {
-		    return $this->prepare_response->respondWithCollection($this->user->categories, new CategoryTransformer);
+		    return $this->prepare_response->respondWithCollection($this->user->categories()->paginate($limit), new CategoryTransformer);
 	    }
 	    return $this->prepare_response->errorUnauthorized();
     }
