@@ -7,11 +7,16 @@ use App\Task;
 use App\Transformers\TaskTransformer;
 use App\User;
 use Illuminate\Support\Facades\Input;
+use Illuminate\Http\Request;
 
 class TaskRepository extends AbstractRepository
 {
 	private $transformer;
 	private $user;
+	const RULES_VALIDATIONS = array(
+		'category_id' => 'required|integer',
+		'description' => 'required|string'
+	);
 
     public function __construct(Task $model, TaskTransformer $transformer)
     {
@@ -46,35 +51,38 @@ class TaskRepository extends AbstractRepository
         return $this->prepare_response->errorUnauthorized();
     }
 
-    /**
-     * @param $params
-     * @param $category_id
-     * @return array
-     */
-    public function createByCategoryAndUser($params, $category_id)
+	/**
+	 * @param Request $request
+	 * @param $category_id
+	 *
+	 * @return array
+	 */
+    public function createByCategoryAndUser(Request $request, $category_id)
     {
-        // TODO: Validate $params and return $this->prepare_response->errorWrongArgs();
-	    if ( $this->user instanceof User ) {
-            $category = ( new Category )
-	            ->where('id', $category_id)
-	            ->where('user_id', $this->user->id)
-	            ->first();
+	    $params = $request->all();
+	    if ( ! $this->user instanceof User ) {
+		    return $this->prepare_response->errorUnauthorized();
+	    }
 
-            if ( $category instanceof Category) {
-                $params["category_id"] = $category->id;
+        $category = ( new Category )
+            ->where('id', $category_id)
+            ->where('user_id', $this->user->id)
+            ->first();
 
-	            return $this->prepare_response
-                    ->setStatusCode(201)
-                        ->respondWithItem(
-		                    $category->tasks()->create($params),
-		                    new TaskTransformer
-	            );
-            }
-
-		    return $this->prepare_response->errorNotFound();
+        if ( ! $category instanceof Category) {
+	        return $this->prepare_response->errorNotFound();
         }
+	    $params["category_id"] = $category->id;
 
-	    return $this->prepare_response->errorUnauthorized();
+	    if ( ! $this->setValidationRules(self::RULES_VALIDATIONS)->validateParameters($params) ) {
+		    return $this->prepare_response->errorWrongArgs();
+	    }
+
+	    return $this->prepare_response->responseCreated(
+		    $category->tasks()->create($params),
+		    new TaskTransformer
+	    );
+
     }
 
 	/**
@@ -115,39 +123,49 @@ class TaskRepository extends AbstractRepository
 	}
 
 	/**
-    * Index Path
-    * @return array
-    */
-    public function updateByUserTaskIDandCategoryID($params, $category_id, $task_id)
+	 * Index Path
+	 *
+	 * @param Request $request
+	 * @param $category_id
+	 * @param $task_id
+	 *
+	 * @return array
+	 */
+    public function updateByUserTaskIDandCategoryID(Request $request, $category_id, $task_id)
     {
-        // TODO: Validate $params and return $this->prepare_response->errorWrongArgs();
-	    if ( $this->user instanceof User ) {
-            $category = ( new Category )
-	            ->where('user_id', $this->user->id)
-	            ->where('id', $category_id)
-	            ->first();
+	    $params = $request->all();
+	    if ( ! $this->user instanceof User ) {
+		    return $this->prepare_response->errorUnauthorized();
+	    }
 
-            if ( $category instanceof Category) {
-                $task = $category
-                    ->tasks()
-                    ->where('id',$task_id)
-                    ->first();
+        $category = ( new Category )
+            ->where('user_id', $this->user->id)
+            ->where('id', $category_id)
+            ->first();
 
-                if ( $task instanceof Task) {
-                    $task->fill($params)->save();
-	                return $this->prepare_response->respondWithItem(
-		                $task,
-		                new TaskTransformer
-	                );
-                }
-
-	            return $this->prepare_response->errorNotFound();
-            }
-
-		    return $this->prepare_response->errorNotFound();
+        if ( ! $category instanceof Category) {
+            return $this->prepare_response->errorNotFound();
         }
+	    $params["category_id"] = $category->id;
 
-	    return $this->prepare_response->errorUnauthorized();
+	    $task = $category
+		    ->tasks()
+		    ->where('id',$task_id)
+		    ->first();
+
+	    if ( ! $task instanceof Task) {
+		    return $this->prepare_response->errorNotFound();
+	    }
+
+	    if ( ! $this->setValidationRules(self::RULES_VALIDATIONS)->validateParameters($params) ) {
+		    return $this->prepare_response->errorWrongArgs();
+	    }
+
+	    $task->fill($params)->save();
+	    return $this->prepare_response->respondWithItem(
+		    $task,
+		    new TaskTransformer
+	    );
     }
 
     /**

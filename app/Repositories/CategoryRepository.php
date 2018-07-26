@@ -4,14 +4,18 @@ namespace App\Repositories;
 use App\Category;
 use App\Http\Controllers\PrepareResponse;
 use App\User;
+use Illuminate\Http\Request;
 use App\Transformers\CategoryTransformer;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Input;
 
 class CategoryRepository extends AbstractRepository
 {
     private $transformer;
     private $user;
+	const RULES_VALIDATIONS = array(
+		'user_id' => 'required|integer',
+		'name' => 'required|max:191'
+	);
 
 	/**
 	 * CategoryRepository constructor.
@@ -44,25 +48,26 @@ class CategoryRepository extends AbstractRepository
 	/**
 	 * Index Path
 	 *
-	 * @param $params
+	 * @param Request $request
 	 *
 	 * @return array
 	 */
-    public function createByUser($params)
+    public function createByUser(Request $request)
     {
-        // TODO: Validate $params and return $this->prepare_response->errorWrongArgs();
-        // TODO: Change to respondeCreated, etc
-	    if ( $this->user instanceof User ) {
-		    $params["user_id"] = $this->user->id;
-
-		    return $this->prepare_response
-                ->setStatusCode(Response::HTTP_CREATED)
-                    ->respondWithItem(
-                        $this->user->categories()->create($params),
-                        new CategoryTransformer
-		    );
+	    $params = $request->all();
+	    if ( ! $this->user instanceof User ) {
+		    return $this->prepare_response->errorUnauthorized();
 	    }
-	    return $this->prepare_response->errorUnauthorized();
+	    $params["user_id"] = $this->user->id;
+
+	    if ( ! $this->setValidationRules(self::RULES_VALIDATIONS)->validateParameters($params) ) {
+		    return $this->prepare_response->errorWrongArgs();
+	    }
+
+	    return $this->prepare_response->responseCreated(
+	        $this->user->categories()->create($params),
+		    new CategoryTransformer
+	    );
     }
 
 	/**
@@ -96,31 +101,38 @@ class CategoryRepository extends AbstractRepository
 	/**
 	 * Index Path
 	 *
-	 * @param $params
+	 * @param Request $request
 	 * @param $id
 	 *
 	 * @return array
 	 */
-    public function updateByUser($params, $id)
+    public function updateByUser(Request $request, $id)
     {
-        // TODO: Validate $params and return $this->prepare_response->errorWrongArgs();
-	    if ( $this->user instanceof User ) {
-		    $category = $this->user->categories()
-		                           ->where('user_id', $this->user->id)
-		                           ->where('id', $id)
-		                           ->first();
+    	$params = $request->all();
+	    if ( ! $this->user instanceof User ) {
+		    return $this->prepare_response->errorUnauthorized();
+	    }
+	    $params["user_id"] = $this->user->id;
 
-		    if ( $category instanceof Category) {
-			    $category->fill($params)->save();
-			    return $this->prepare_response->respondWithItem(
-				    $category,
-				    new CategoryTransformer
-			    );
-		    }
+	    if ( ! $this->setValidationRules(self::RULES_VALIDATIONS)->validateParameters($params) ) {
+		    return $this->prepare_response->errorWrongArgs();
+	    }
+
+	    $category = $this->user->categories()
+	                           ->where('user_id', $this->user->id)
+	                           ->where('id', $id)
+	                           ->first();
+
+	    if ( ! $category instanceof Category) {
 		    return $this->prepare_response->errorNotFound();
 	    }
 
-	    return $this->prepare_response->errorUnauthorized();
+	    $category->fill($params)->save();
+	    return $this->prepare_response->respondWithItem(
+		    $category,
+		    new CategoryTransformer
+	    );
+
     }
 
 	/**

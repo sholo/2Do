@@ -39,13 +39,13 @@ class PrepareResponse
 
 	/**
 	 * @param Model $item
-	 * @param Transformer $callback
+	 * @param Transformer $transformer
 	 *
 	 * @return array
 	 */
-	public function respondWithItem(Model $item, Transformer $callback)
+	public function respondWithItem(Model $item, Transformer $transformer)
 	{
-		$resource = $callback->item($item);
+		$resource = $transformer->item($item);
 		return $this->respondWithArray(array('data' => $resource));
 	}
 
@@ -205,5 +205,17 @@ class PrepareResponse
 	{
 	    return $this->setStatusCode(Response::HTTP_UNPROCESSABLE_ENTITY)
 	                ->respondWithError($message, self::CODE_WRONG_ARGS);
+	}
+
+	/**
+	 * @param Model $item
+	 * @param Transformer $transformer
+	 *
+	 * @return array
+	 */
+	public function responseCreated(Model $item, Transformer $transformer)
+	{
+		return $this->setStatusCode(Response::HTTP_CREATED)
+		            ->respondWithItem($item, $transformer);
 	}
 }
