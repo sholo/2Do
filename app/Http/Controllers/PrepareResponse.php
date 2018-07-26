@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Transformers\Transformer;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Response;
 
 class PrepareResponse
 {
@@ -150,7 +151,7 @@ class PrepareResponse
 	 */
 	public function errorForbidden($message = 'Forbidden')
 	{
-	    return $this->setStatusCode(403)
+	    return $this->setStatusCode(Response::HTTP_FORBIDDEN)
 	                ->respondWithError($message, self::CODE_FORBIDDEN);
 	}
 
@@ -163,7 +164,7 @@ class PrepareResponse
 	 */
 	public function errorInternalError($message = 'Internal Error')
 	{
-		return $this->setStatusCode(500)
+		return $this->setStatusCode(Response::HTTP_INTERNAL_SERVER_ERROR)
 		            ->respondWithError($message, self::CODE_INTERNAL_ERROR);
 	}
 
@@ -176,7 +177,7 @@ class PrepareResponse
 	 */
 	public function errorNotFound($message = 'Resource Not Found')
 	{
-	    return $this->setStatusCode(404)
+	    return $this->setStatusCode(Response::HTTP_NOT_FOUND)
 	                ->respondWithError($message, self::CODE_NOT_FOUND);
 	}
 
@@ -189,7 +190,7 @@ class PrepareResponse
 	 */
 	public function errorUnauthorized($message = 'Unauthorized')
 	{
-	    return $this->setStatusCode(401)
+	    return $this->setStatusCode(Response::HTTP_UNAUTHORIZED)
 	                ->respondWithError($message, self::CODE_UNAUTHORIZED);
 	}
 
@@ -202,7 +203,7 @@ class PrepareResponse
 	 */
 	public function errorWrongArgs($message = 'Wrong Arguments')
 	{
-	    return $this->setStatusCode(400)
+	    return $this->setStatusCode(Response::HTTP_UNPROCESSABLE_ENTITY)
 	                ->respondWithError($message, self::CODE_WRONG_ARGS);
 	}
 }

@@ -53,6 +53,7 @@ class TaskRepository extends AbstractRepository
      */
     public function createByCategoryAndUser($params, $category_id)
     {
+        // TODO: Validate $params and return $this->prepare_response->errorWrongArgs();
 	    if ( $this->user instanceof User ) {
             $category = ( new Category )
 	            ->where('id', $category_id)
@@ -62,9 +63,11 @@ class TaskRepository extends AbstractRepository
             if ( $category instanceof Category) {
                 $params["category_id"] = $category->id;
 
-	            return $this->prepare_response->respondWithItem(
-		            $category->tasks()->create($params),
-		            new TaskTransformer
+	            return $this->prepare_response
+                    ->setStatusCode(201)
+                        ->respondWithItem(
+		                    $category->tasks()->create($params),
+		                    new TaskTransformer
 	            );
             }
 
@@ -117,6 +120,7 @@ class TaskRepository extends AbstractRepository
     */
     public function updateByUserTaskIDandCategoryID($params, $category_id, $task_id)
     {
+        // TODO: Validate $params and return $this->prepare_response->errorWrongArgs();
 	    if ( $this->user instanceof User ) {
             $category = ( new Category )
 	            ->where('user_id', $this->user->id)

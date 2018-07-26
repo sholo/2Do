@@ -5,6 +5,7 @@ use App\Category;
 use App\Http\Controllers\PrepareResponse;
 use App\User;
 use App\Transformers\CategoryTransformer;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Input;
 
 class CategoryRepository extends AbstractRepository
@@ -49,12 +50,16 @@ class CategoryRepository extends AbstractRepository
 	 */
     public function createByUser($params)
     {
+        // TODO: Validate $params and return $this->prepare_response->errorWrongArgs();
+        // TODO: Change to respondeCreated, etc
 	    if ( $this->user instanceof User ) {
 		    $params["user_id"] = $this->user->id;
 
-		    return $this->prepare_response->respondWithItem(
-			    $this->user->categories()->create($params),
-			    new CategoryTransformer
+		    return $this->prepare_response
+                ->setStatusCode(Response::HTTP_CREATED)
+                    ->respondWithItem(
+                        $this->user->categories()->create($params),
+                        new CategoryTransformer
 		    );
 	    }
 	    return $this->prepare_response->errorUnauthorized();
@@ -98,6 +103,7 @@ class CategoryRepository extends AbstractRepository
 	 */
     public function updateByUser($params, $id)
     {
+        // TODO: Validate $params and return $this->prepare_response->errorWrongArgs();
 	    if ( $this->user instanceof User ) {
 		    $category = $this->user->categories()
 		                           ->where('user_id', $this->user->id)
@@ -127,7 +133,6 @@ class CategoryRepository extends AbstractRepository
 	 */
     public function deleteByUser($id)
     {
-
 	    if ( $this->user instanceof User ) {
             $category = $this->user->categories()
                                    ->where('user_id', $this->user->id)
