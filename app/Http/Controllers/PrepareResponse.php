@@ -3,8 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Transformers\Transformer;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 class PrepareResponse
 {
@@ -69,23 +69,37 @@ class PrepareResponse
 	}
 
 	/**
-	 * @param LengthAwarePaginator $collection
+	 * @param Paginator $paginator
 	 * @param Transformer $callback
 	 *
 	 * @return array
 	 */
-	public function respondWithCollection(LengthAwarePaginator $collection, Transformer $callback)
+	public function respondWithCollection(Paginator $paginator, Transformer $callback)
 	{
-		$resource = $callback->collection($collection);
-		return $this->respondWithArray([
-			'data' => $resource,
+		$resource = $this->respondWithPagination(
+			$paginator,
+			['data' => $callback->collection($paginator)]
+		);
+
+		return $this->respondWithArray($resource);
+	}
+
+	/**
+	 * @param Paginator $paginator
+	 * @param $data
+	 *
+	 * @return array
+	 */
+	private function respondWithPagination(Paginator $paginator, $data)
+	{
+		return array_merge($data, [
 			'pagination' => [
-				'total_count' => $collection->total(),
-				'total_pages' => ceil($collection->total() / $collection ->perPage()),
-				'current_page' => $collection->currentPage(),
-				'limit' => (int) $collection->perPage(),
-				'previous_page' => $collection->previousPageUrl() ? : (bool) $collection->previousPageUrl(),
-				'next_page' => $collection->nextPageUrl() ? : (bool) $collection->nextPageUrl(),
+				'total_count' => $paginator->total(),
+				'total_pages' => ceil($paginator->total() / $paginator->perPage()),
+				'current_page' => $paginator->currentPage(),
+				'limit' => (int) $paginator->perPage(),
+				'previous_page' => $paginator->previousPageUrl() ? : (bool) $paginator->previousPageUrl(),
+				'next_page' => $paginator->nextPageUrl() ? : (bool) $paginator->nextPageUrl(),
 			]
 		]);
 	}

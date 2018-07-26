@@ -2,9 +2,8 @@
 
 namespace App\Transformers;
 
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Pagination\LengthAwarePaginator;
 
 abstract class Transformer
 {
@@ -18,15 +17,15 @@ abstract class Transformer
 	/**
 	 * Transform a collection of elements.
 	 *
-	 * @param LengthAwarePaginator $collection
+	 * @param Paginator $paginator
 	 *
 	 * @return array
 	 */
-	public function collection(LengthAwarePaginator $collection)
+	public function collection(Paginator $paginator)
 	{
 		$resource = [];
 
-		foreach ($collection as $object_model) {
+		foreach ($paginator as $object_model) {
 			$resource[] = $this->transform($object_model);
 		}
 
