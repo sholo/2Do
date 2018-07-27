@@ -16,10 +16,7 @@ class UsersTableSeeder extends Seeder
 	    factory(App\User::class, $number_users)
 		    ->create()
 		    ->each(function ($u) {
-			    $tokenResult = $u->createToken('Laravel Personal Access Client')->accessToken;
-			    $token = $tokenResult->token;
-			    $token->expires_at = Carbon::now()->addWeeks(1);
-			    $token->save();
+			    $u->createToken('Personal')->accessToken;
 		    });
     }
 }

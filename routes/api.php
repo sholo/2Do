@@ -16,7 +16,6 @@
     Route::resource('categories.tasks', 'TaskController');
 })->middleware('auth:api');*/
 
-
 Route::get('/test', function() {
 	return "Hola mundo";
 })->middleware('auth:api');
