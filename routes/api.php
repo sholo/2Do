@@ -1,7 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
-
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -13,8 +11,12 @@ use Illuminate\Http\Request;
 |
 */
 
-Route::group(['prefix' => 'v1'], function () {
+/*Route::group(['prefix' => 'v1'], function () {
     Route::resource('categories', 'CategoryController');
     Route::resource('categories.tasks', 'TaskController');
-});
+})->middleware('auth:api');*/
 
+
+Route::get('/test', function() {
+	return "Hola mundo";
+})->middleware('auth:api');

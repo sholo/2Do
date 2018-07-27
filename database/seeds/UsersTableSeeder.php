@@ -1,8 +1,7 @@
 <?php
 
-use App\User;
+use Carbon\Carbon;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\Config;
 
 class UsersTableSeeder extends Seeder
 {
@@ -13,7 +12,14 @@ class UsersTableSeeder extends Seeder
      */
     public function run()
     {
-    	// To create one user
-	    factory(App\User::class)->create();
+	    $number_users = 1;
+	    factory(App\User::class, $number_users)
+		    ->create()
+		    ->each(function ($u) {
+			    $tokenResult = $u->createToken('Laravel Personal Access Client')->accessToken;
+			    $token = $tokenResult->token;
+			    $token->expires_at = Carbon::now()->addWeeks(1);
+			    $token->save();
+		    });
     }
 }

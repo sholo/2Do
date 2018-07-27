@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Validator;
 
 abstract class AbstractRepository
 {
-
     protected $prepare_response;
     protected $validation_rules = array();
 
