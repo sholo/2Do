@@ -3,8 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Repositories\CategoryRepository;
-use App\Transformers\CategoryTransformer;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 class CategoryController extends ContentNegotiationController

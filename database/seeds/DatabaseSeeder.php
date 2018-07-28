@@ -1,10 +1,8 @@
 <?php
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\App;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Artisan;
 
 class DatabaseSeeder extends Seeder
 {
@@ -19,22 +17,11 @@ class DatabaseSeeder extends Seeder
 		    exit('I just stopped you getting fired. Love Phil');
 	    }
 
-	    // Disable mass-assignment protection with Laravel
-	    Model::unguard();
+	    Artisan::call('migrate:refresh', [
+		    '--force' => true
+	    ]);
 
-	    $tables = [
-		    'users',
-		    'categories',
-		    'tasks',
-		];
-
-	    Schema::disableForeignKeyConstraints();
-
-		foreach ($tables as $table) {
-			DB::table($table)->truncate();
-		}
-
-	    Schema::enableForeignKeyConstraints();
+	    Artisan::call('passport:install');
 
 	    $this->call(UsersTableSeeder::class);
 	    $this->call(CategoriesTableSeeder::class);

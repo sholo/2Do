@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Category;
 use App\Repositories\TaskRepository;
 use App\Transformers\TaskTransformer;
-use App\Task;
 use Illuminate\Http\Request;
 
 class TaskController extends ContentNegotiationController
@@ -73,14 +71,15 @@ class TaskController extends ContentNegotiationController
 	    return $this->responseWith($response_array, $status_code);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int $category_id
-     *
-     * @return \Illuminate\Http\Response
-     * @throws \Exception
-     */
+	/**
+	 * Remove the specified resource from storage.
+	 *
+	 * @param  int $category_id
+	 *
+	 * @param $task_id
+	 *
+	 * @return \Illuminate\Http\Response
+	 */
     public function destroy($category_id, $task_id)
     {
 	    list($response_array, $status_code) = $this->task->deleteByUserTaskIDandCategoryID($category_id, $task_id);

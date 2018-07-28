@@ -4,14 +4,13 @@ namespace App\Repositories;
 use App\Category;
 use App\Http\Controllers\PrepareResponse;
 use App\User;
-use Illuminate\Http\Request;
 use App\Transformers\CategoryTransformer;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Input;
 
 class CategoryRepository extends AbstractRepository
 {
     private $transformer;
-    private $user;
 	const RULES_VALIDATIONS = array(
 		'user_id' => 'required|integer',
 		'name' => 'required|max:191'
@@ -23,9 +22,8 @@ class CategoryRepository extends AbstractRepository
 	 */
 	public function __construct()
     {
-        parent::__construct(new PrepareResponse);
-        $this->transformer = new CategoryTransformer();
-        $this->user = $this->checkUserExist();
+	    parent::__construct(new PrepareResponse);
+	    $this->transformer = new CategoryTransformer();
     }
 
     /**
@@ -34,38 +32,40 @@ class CategoryRepository extends AbstractRepository
      */
     public function getAllOfUser()
     {
+	    $user = Auth::user();
+	    if ( ! $user instanceof User) {
+		    return $this->prepare_response->errorUnauthorized();
+	    }
+
 	    $limit = Input::get('limit')? : self::DEFAULT_LIMIT;
 	    if ( $limit > self::MAXIMUM_LIMIT ) {
 		    $limit = self::MAXIMUM_LIMIT;
 	    }
 
-	    if ( $this->user instanceof User ) {
-		    return $this->prepare_response->respondWithCollection($this->user->categories()->paginate($limit), new CategoryTransformer);
-	    }
-	    return $this->prepare_response->errorUnauthorized();
+	    return $this->prepare_response->respondWithCollection($user->categories()->paginate($limit), new CategoryTransformer);
     }
 
 	/**
 	 * Index Path
 	 *
-	 * @param Request $request
+	 * @param array $params
 	 *
 	 * @return array
 	 */
-    public function createByUser(Request $request)
+    public function createByUser(array $params)
     {
-	    $params = $request->all();
-	    if ( ! $this->user instanceof User ) {
+	    $user = Auth::user();
+	    if ( ! $user instanceof User) {
 		    return $this->prepare_response->errorUnauthorized();
 	    }
-	    $params["user_id"] = $this->user->id;
+	    $params["user_id"] = $user->id;
 
 	    if ( ! $this->setValidationRules(self::RULES_VALIDATIONS)->validateParameters($params) ) {
 		    return $this->prepare_response->errorWrongArgs();
 	    }
 
 	    return $this->prepare_response->responseCreated(
-	        $this->user->categories()->create($params),
+		    $user->categories()->create($params),
 		    new CategoryTransformer
 	    );
     }
@@ -79,47 +79,48 @@ class CategoryRepository extends AbstractRepository
 	 */
     public function showCategoryOfUser($id)
     {
-        if ( $this->user instanceof User ) {
-	        $category = $this->user->categories()
-	                   ->where('user_id', $this->user->id)
-	                   ->where('id', $id)
-	                   ->first();
+	    $user = Auth::user();
+	    if ( ! $user instanceof User) {
+		    return $this->prepare_response->errorUnauthorized();
+	    }
 
-	        if ( $category instanceof Category) {
-		        return $this->prepare_response->respondWithItem(
-			        $category,
-			        new CategoryTransformer
-		        );
-	        }
+        $category = $user->categories()
+                   ->where('user_id', $user->id)
+                   ->where('id', $id)
+                   ->first();
 
-	        return $this->prepare_response->errorNotFound();
+        if ( $category instanceof Category) {
+	        return $this->prepare_response->respondWithItem(
+		        $category,
+		        new CategoryTransformer
+	        );
         }
 
-	    return $this->prepare_response->errorUnauthorized();
+        return $this->prepare_response->errorNotFound();
     }
 
 	/**
 	 * Index Path
 	 *
-	 * @param Request $request
+	 * @param array $params
 	 * @param $id
 	 *
 	 * @return array
 	 */
-    public function updateByUser(Request $request, $id)
+    public function updateByUser(array $params, $id)
     {
-    	$params = $request->all();
-	    if ( ! $this->user instanceof User ) {
+	    $user = Auth::user();
+	    if ( ! $user instanceof User) {
 		    return $this->prepare_response->errorUnauthorized();
 	    }
-	    $params["user_id"] = $this->user->id;
+	    $params["user_id"] = $user->id;
 
 	    if ( ! $this->setValidationRules(self::RULES_VALIDATIONS)->validateParameters($params) ) {
 		    return $this->prepare_response->errorWrongArgs();
 	    }
 
-	    $category = $this->user->categories()
-	                           ->where('user_id', $this->user->id)
+	    $category = $user->categories()
+	                           ->where('user_id', $user->id)
 	                           ->where('id', $id)
 	                           ->first();
 
@@ -145,19 +146,20 @@ class CategoryRepository extends AbstractRepository
 	 */
     public function deleteByUser($id)
     {
-	    if ( $this->user instanceof User ) {
-            $category = $this->user->categories()
-                                   ->where('user_id', $this->user->id)
-                                   ->where('id', $id)
-                                   ->first();
+	    $user = Auth::user();
+	    if ( ! $user instanceof User) {
+		    return $this->prepare_response->errorUnauthorized();
+	    }
 
-            if ( $category instanceof Category) {
-	            $category->delete();
-	            return $this->prepare_response->respondWithoutItem("Category");
-            }
-		    return $this->prepare_response->errorNotFound();
+        $category = $user->categories()
+                               ->where('user_id', $user->id)
+                               ->where('id', $id)
+                               ->first();
+
+        if ( $category instanceof Category) {
+            $category->delete();
+            return $this->prepare_response->respondWithoutItem("Category");
         }
-
-	    $this->prepare_response->errorUnauthorized();
+	    return $this->prepare_response->errorNotFound();
     }
 }

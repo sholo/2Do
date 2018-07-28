@@ -11,11 +11,11 @@
 |
 */
 
-/*Route::group(['prefix' => 'v1'], function () {
-    Route::resource('categories', 'CategoryController');
-    Route::resource('categories.tasks', 'TaskController');
-})->middleware('auth:api');*/
+Route::post('login', 'API\PassportController@login');
+Route::post('register', 'API\PassportController@register');
 
-Route::get('/test', function() {
-	return "Hola mundo";
-})->middleware('auth:api');
+Route::group(['middleware' => 'auth:api'], function(){
+	Route::resource('categories', 'CategoryController');
+	Route::resource('categories.tasks', 'TaskController');
+	Route::post('get-details', 'API\PassportController@getDetails');
+});

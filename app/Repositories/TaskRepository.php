@@ -6,13 +6,12 @@ use App\Http\Controllers\PrepareResponse;
 use App\Task;
 use App\Transformers\TaskTransformer;
 use App\User;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Input;
-use Illuminate\Http\Request;
 
 class TaskRepository extends AbstractRepository
 {
 	private $transformer;
-	private $user;
 	const RULES_VALIDATIONS = array(
 		'category_id' => 'required|integer',
 		'description' => 'required|string'
@@ -22,7 +21,6 @@ class TaskRepository extends AbstractRepository
     {
         parent::__construct(new PrepareResponse);
 	    $this->transformer = new TaskTransformer();
-	    $this->user = $this->checkUserExist();
     }
 
     /**
@@ -31,42 +29,43 @@ class TaskRepository extends AbstractRepository
      */
     public function getAllByCategoryAndUser($category_id)
     {
+	    $user = Auth::user();
+	    if ( ! $user instanceof User) {
+		    return $this->prepare_response->errorUnauthorized();
+	    }
+
 	    $limit = Input::get('limit')? : self::DEFAULT_LIMIT;
 	    if ( $limit > self::MAXIMUM_LIMIT ) {
 		    $limit = self::MAXIMUM_LIMIT;
 	    }
 
-	    if ( $this->user instanceof User ) {
-            $category = ( new Category )
-	            ->where('id', $category_id)
-	            ->where('user_id', $this->user->id)
-	            ->first();
+        $category = ( new Category )
+            ->where('id', $category_id)
+            ->where('user_id', $user->id)
+            ->first();
 
-            if ( $category instanceof Category) {
-	            return $this->prepare_response->respondWithCollection($category->tasks()->paginate($limit), new TaskTransformer);
-            }
-		    return $this->prepare_response->errorNotFound();
+        if ( $category instanceof Category) {
+            return $this->prepare_response->respondWithCollection($category->tasks()->paginate($limit), new TaskTransformer);
         }
-
-        return $this->prepare_response->errorUnauthorized();
+	    return $this->prepare_response->errorNotFound();
     }
 
 	/**
-	 * @param Request $request
+	 * @param array $params
 	 * @param $category_id
 	 *
 	 * @return array
 	 */
-    public function createByCategoryAndUser(Request $request, $category_id)
+    public function createByCategoryAndUser(array $params, $category_id)
     {
-	    $params = $request->all();
-	    if ( ! $this->user instanceof User ) {
+	    $user = Auth::user();
+	    if ( ! $user instanceof User) {
 		    return $this->prepare_response->errorUnauthorized();
 	    }
 
         $category = ( new Category )
             ->where('id', $category_id)
-            ->where('user_id', $this->user->id)
+            ->where('user_id', $user->id)
             ->first();
 
         if ( ! $category instanceof Category) {
@@ -95,51 +94,52 @@ class TaskRepository extends AbstractRepository
 	 */
 	public function showByUserTaskIDAndCategoryID($category_id, $task_id)
 	{
-		if ( $this->user instanceof User ) {
-			$category = $this->user->categories()
-			             ->where('id',$category_id)
-			             ->first();
+		$user = Auth::user();
+		if ( ! $user instanceof User) {
+			return $this->prepare_response->errorUnauthorized();
+		}
 
-			if ( $category instanceof Category) {
-				$task = $category
-					->tasks()
-					->where('id',$task_id)
-					->first();
+		$category = $user->categories()
+		             ->where('id',$category_id)
+		             ->first();
 
-				if ( $task instanceof Task) {
-					return $this->prepare_response->respondWithItem(
-						$task,
-						new TaskTransformer
-					);
-				}
+		if ( $category instanceof Category) {
+			$task = $category
+				->tasks()
+				->where('id',$task_id)
+				->first();
 
-				return $this->prepare_response->errorNotFound();
+			if ( $task instanceof Task) {
+				return $this->prepare_response->respondWithItem(
+					$task,
+					new TaskTransformer
+				);
 			}
 
 			return $this->prepare_response->errorNotFound();
 		}
 
-		return $this->prepare_response->errorUnauthorized();
+		return $this->prepare_response->errorNotFound();
 	}
 
 	/**
 	 * Index Path
 	 *
-	 * @param Request $request
+	 * @param array $params
 	 * @param $category_id
 	 * @param $task_id
 	 *
 	 * @return array
 	 */
-    public function updateByUserTaskIDandCategoryID(Request $request, $category_id, $task_id)
+    public function updateByUserTaskIDandCategoryID(array $params, $category_id, $task_id)
     {
-	    $params = $request->all();
-	    if ( ! $this->user instanceof User ) {
+	    $user = Auth::user();
+	    if ( ! $user instanceof User) {
 		    return $this->prepare_response->errorUnauthorized();
 	    }
 
         $category = ( new Category )
-            ->where('user_id', $this->user->id)
+            ->where('user_id', $user->id)
             ->where('id', $category_id)
             ->first();
 
@@ -168,35 +168,40 @@ class TaskRepository extends AbstractRepository
 	    );
     }
 
-    /**
-     * Index Path
-     * @return array
-     */
+	/**
+	 * Index Path
+	 *
+	 * @param $category_id
+	 * @param $task_id
+	 *
+	 * @return array
+	 */
     public function deleteByUserTaskIDandCategoryID($category_id, $task_id)
     {
-	    if ( $this->user instanceof User ) {
-            $category = ( new Category )
-	            ->where('user_id', $this->user->id)
-	            ->where('id', $category_id)
-	            ->first();
+	    $user = Auth::user();
+	    if ( ! $user instanceof User) {
+		    return $this->prepare_response->errorUnauthorized();
+	    }
 
-            if ( $category instanceof Category) {
-                $task = $category
-                    ->tasks()
-                    ->where('id',$task_id)
-                    ->first();
+        $category = ( new Category )
+            ->where('user_id', $user->id)
+            ->where('id', $category_id)
+            ->first();
 
-                if ( $task instanceof Task) {
-                    $task->delete();
-	                return $this->prepare_response->respondWithoutItem("Task");
-                }
+        if ( $category instanceof Category) {
+            $task = $category
+                ->tasks()
+                ->where('id',$task_id)
+                ->first();
 
-	            return $this->prepare_response->errorNotFound();
+            if ( $task instanceof Task) {
+                $task->delete();
+                return $this->prepare_response->respondWithoutItem("Task");
             }
 
-		    return $this->prepare_response->errorNotFound();
+            return $this->prepare_response->errorNotFound();
         }
 
-	    return $this->prepare_response->errorUnauthorized();
+	    return $this->prepare_response->errorNotFound();
     }
 }

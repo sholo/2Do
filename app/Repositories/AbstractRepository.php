@@ -2,7 +2,6 @@
 namespace App\Repositories;
 
 use App\Http\Controllers\PrepareResponse;
-use App\User;
 use Illuminate\Support\Facades\Validator;
 
 abstract class AbstractRepository
@@ -21,15 +20,6 @@ abstract class AbstractRepository
     {
         $this->prepare_response = $prepareResponse;
     }
-
-	protected function checkUserExist()
-	{
-		$user = request()->user();
-		if ( $user instanceof User ) {
-			return $user;
-		}
-		return null;
-	}
 
 	protected function validateParameters(array $params)
 	{

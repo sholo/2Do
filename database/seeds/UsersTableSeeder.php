@@ -1,6 +1,5 @@
 <?php
 
-use Carbon\Carbon;
 use Illuminate\Database\Seeder;
 
 class UsersTableSeeder extends Seeder
@@ -15,8 +14,8 @@ class UsersTableSeeder extends Seeder
 	    $number_users = 1;
 	    factory(App\User::class, $number_users)
 		    ->create()
-		    ->each(function ($u) {
-			    $u->createToken('Personal')->accessToken;
+		    ->each(function ($user) {
+			    $user->createToken('MyApp')->accessToken;
 		    });
     }
 }
